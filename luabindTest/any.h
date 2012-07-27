@@ -22,7 +22,7 @@
 #include "TypeList.h"
 #include "Trait.h"
 
-typedef LOKI_TYPELIST_11(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,void) internalType;
+typedef LOKI_TYPELIST_12(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,void,__int64) internalType;
 
 class luaObject;
 class any;
@@ -30,7 +30,7 @@ class any;
 
 typedef std::vector<any> luatable;
 
-typedef LOKI_TYPELIST_13(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,std::string,luaObject,luatable) SupportType;
+typedef LOKI_TYPELIST_14(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,std::string,luaObject,luatable,__int64) SupportType;
 
 //注册到lua中的用户数据类型信息
 template<typename T>

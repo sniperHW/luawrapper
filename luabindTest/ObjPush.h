@@ -72,6 +72,17 @@ private:
 
 };
 
+//对int64的特化成
+template<>
+class objPush<__int64>
+{
+public:
+	objPush(lua_State *L,__int64 value)
+	{
+		pushI64(L,value);
+	}
+};
+
 //对std::string的特化
 template<>
 class objPush<std::string>
@@ -171,6 +182,10 @@ public:
 				else if(t_type == 12)
 				{
 					objPush<luatable> obj(L,any_cast<luatable>(arg[i]));
+				}
+				else if(t_type == 13)
+				{
+					objPush<__int64> obj(L,any_cast<__int64>(arg[i]));
 				}
 			}
 

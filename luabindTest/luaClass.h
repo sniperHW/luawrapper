@@ -21,7 +21,17 @@ static const struct luaL_Reg i64Lib[] = {
 class Integer64
 {
 public:
-	Integer64(__int64 val):m_val(val){}
+	Integer64(__int64 val):m_val(val)
+	{
+		m_flag = 0XFEDC1234;
+	}
+
+	__int64 GetValue() const
+	{
+		return m_val;
+	}
+
+	int GetFlag() const{return m_flag;}
 
 	static void Register2Lua(lua_State *L)
 	{
@@ -65,7 +75,12 @@ public:
 		lua_pushstring(L, "__tostring");
 		lua_pushcfunction(L, i64toString);
 		lua_rawset(L, -3);
-		
+
+		//just for test
+		//lua_pushstring(L,"__gc");
+		//lua_pushcfunction(L, i64Destroy);
+		//lua_rawset(L, -3);
+
 		lua_rawset(L,1);
 		lua_pop(L,1);
 		luaL_register(L,"i64",i64Lib);
@@ -166,8 +181,18 @@ public:
 		lua_pushstring(L, temp);
 		return 1;
 	}
+
+	static int i64Destroy(lua_State *L)
+	{
+		Integer64 *i64self  = (Integer64 *)lua_touserdata(L,1);
+		luaL_argcheck(L, i64self  != NULL, 1, "userdata expected");	
+		printf("i64Destroy\n");
+		return 0;
+	}
+
 private:
 	__int64 m_val;
+	int     m_flag;
 };
 
 
@@ -186,6 +211,14 @@ static int newI64(lua_State *L)
 	}
 	Integer64::setmetatable(L);
 	return 1;
+}
+
+static void pushI64(lua_State *L,__int64 value)
+{
+	size_t nbytes = sizeof(Integer64);
+	void *buf = lua_newuserdata(L, nbytes);
+	new(buf)Integer64(value);
+	Integer64::setmetatable(L);
 }
 
 struct dummy
@@ -410,6 +443,7 @@ public:
     
 public:
     T *ptr;
+	int m_flag;
 
 };
 
@@ -418,6 +452,7 @@ static int NewObj(lua_State *L,void *ptr,const char *classname)
     size_t nbytes = sizeof(objUserData<void>);
     objUserData<void> *obj = (objUserData<void> *)lua_newuserdata(L, nbytes);
     obj->ptr = ptr;
+	obj->m_flag = 0x1234AFEC;
     luaL_getmetatable(L, "kenny.lualib");
     lua_pushstring(L,classname);
     lua_gettable(L,-2);

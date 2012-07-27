@@ -62,19 +62,10 @@ template<>
 inline const void *popvalue(lua_State *L)
 {
 	const void *ret;
-	if(!lua_isuserdata(L,-1))
-	{
-		//lightuserdata
-		ret = lua_touserdata(L,-1);
-		lua_pop(L,1);
-	}
-	else
-	{
-		//userdata
-		ret = lua_touserdata(L,-1);
+	ret = lua_touserdata(L,-1);
+	if(((objUserData<void>*)ret)->m_flag == 0x1234AFEC)
 		ret = ((objUserData<void>*)ret)->ptr;
-		lua_pop(L,1);
-	}
+	lua_pop(L,1);
 	return ret;
 }
 
@@ -84,6 +75,13 @@ inline bool popvalue(lua_State *L)
 	bool ret = (bool)lua_toboolean(L,-1);
 	lua_pop(L,1);
 	return ret;
+}
+
+template<>
+inline __int64 popvalue(lua_State *L)
+{
+	Integer64 *ret = (Integer64*)lua_touserdata(L,-1);
+	return ret->GetValue();
 }
 
 
@@ -103,7 +101,16 @@ inline luatable popvalue(lua_State *L)
 		}
 		else if(lua_isuserdata(L,-1))
 		{
-			ret.push_back(popvalue<const void*>(L));
+			const void *r = lua_touserdata(L,-1);
+			if(((Integer64*)r)->GetFlag() == 0XFEDC1234)
+			{
+				ret.push_back(((Integer64*)r)->GetValue());
+			}
+			else if(((objUserData<void>*)r)->m_flag == 0x1234AFEC)
+				ret.push_back((const void*)((objUserData<void>*)r)->ptr);
+			else
+				ret.push_back(r);
+			lua_pop(L,1);
 		}		
 		else if(lua_isnumber(L,-1))
 		{

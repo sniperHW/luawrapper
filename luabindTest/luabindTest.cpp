@@ -73,7 +73,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	kennyluainit(L,&lw);
 	
 	Integer64::Register2Lua(L);
-
+/*
 	//≤‚ ‘◊¢≤·»Œ“‚C++∫Ø ˝
 	registerFun1(L,"show",showmsg);
 	
@@ -89,8 +89,14 @@ int _tmain(int argc, _TCHAR* argv[])
 	testc tc;
 	tc.valb = 100;
 	testb tb;
-	tb.valb = 1000;
-	call_luaFunction2<void>("test1",L,&tb,&tc);
+	tb.valb = 1000;*/
+	//luatable lt;
+	//const void *ptr = &lt;
+	//lt.push_back(ptr);
+	//lt.push_back(__int64(17179869183));
+	
+	call_luaFunction0<void>("test1",L);
+	printf("haha\n");
 	
 /*
 	printf("after call valb = %d\n",tb.valb);
