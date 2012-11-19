@@ -167,7 +167,7 @@ public:
 	
 	bool isNULL() const
 	{
-		return m_iKeyIndex == -1;
+		return m_iKeyIndex <= 0;
 	}
 
 private:
