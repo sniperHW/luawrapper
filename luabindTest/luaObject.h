@@ -164,6 +164,11 @@ public:
 	{
 		return m_iKeyIndex;
 	}
+	
+	bool isNULL() const
+	{
+		return m_iKeyIndex == -1;
+	}
 
 private:
 	lua_State *m_plState;
