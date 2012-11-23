@@ -94,6 +94,29 @@ public:
 	}
 };
 
+
+template<>
+class objPush<array_holder>
+{
+public:
+	objPush(lua_State *L,const array_holder &arg)
+	{
+		c_array::NewObj(L,arg.ptr,arg.type_index);
+	}
+};
+
+/*
+template<>
+template <typename T>
+class objPush<T[]>
+{
+public:
+	objPush(lua_State *L,T arg[])
+	{
+		c_array::NewObj(L,arg);
+	}
+};*/
+
 //针对luaObject的特化
 template<>
 class objPush<luaObject>

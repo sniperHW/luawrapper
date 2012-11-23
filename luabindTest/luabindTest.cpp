@@ -71,8 +71,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	lua_State *L = *(&lw);
 	kennyluainit(L,&lw);
-	
-	Integer64::Register2Lua(L);
+	c_array::register_c_array(L);
+	//Integer64::Register2Lua(L);
 /*
 	//²âÊÔ×¢²áÈÎÒâC++º¯Êı
 	registerFun1(L,"show",showmsg);
@@ -94,8 +94,11 @@ int _tmain(int argc, _TCHAR* argv[])
 	//const void *ptr = &lt;
 	//lt.push_back(ptr);
 	//lt.push_back(__int64(17179869183));
+
+	int _array[10];
+	_array[1]= 8;
 	
-	call_luaFunction0<void>("test1",L);
+	call_luaFunction1<void,array_holder>("test1",L,_array);
 	printf("haha\n");
 	
 /*

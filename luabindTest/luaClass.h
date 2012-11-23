@@ -260,6 +260,184 @@ template<typename T,typename type,type (T::*field)>
 void registerField(const char *name);
 
 
+class array_holder
+{
+public:
+	template<typename T>
+	array_holder(T _ptr):ptr(_ptr)
+	{
+		type_index = IndexOf<internalType,pointerTraits<T>::PointeeType>::value;
+	}
+	void *ptr;
+	int type_index;
+};
+
+class c_array
+{
+public:
+
+
+    static c_array *checkobjuserdata (lua_State *L,int index) {
+      void *ud = lua_touserdata(L,index);
+      luaL_argcheck(L, ud != NULL, 1, "userdata expected");
+      return (c_array*)ud;
+    }
+
+	static void register_c_array(lua_State *L)
+	{
+        luaL_getmetatable(L, "kenny.lualib");
+            
+        lua_pushstring(L,"c_array");
+
+        luaL_newmetatable(L, "c_array");
+        lua_pushstring(L, "__index");
+        lua_pushcfunction(L, &c_array::Index);
+        lua_settable(L, -3);  
+        
+        lua_pushstring(L, "__newindex");
+        lua_pushcfunction(L, &c_array::NewIndex);  
+        lua_rawset(L, -3);
+
+        lua_rawset(L,1);
+        lua_pop(L,1);		
+	}
+
+    static int NewObj(lua_State *L,void *ptr,int type_index) 
+    {
+
+		size_t nbytes = sizeof(c_array);
+		c_array *obj = (c_array*)lua_newuserdata(L, nbytes);
+		obj->data = ptr;
+		obj->type_index = type_index;
+		luaL_getmetatable(L, "kenny.lualib");
+		lua_pushstring(L,"c_array");
+		lua_gettable(L,-2);
+		lua_setmetatable(L, -3);
+		lua_pop(L,1);//pop mt kenny.lualib
+		return 1;
+    }
+
+
+
+    static int NewIndex(lua_State *L)
+    {
+
+       c_array *self = checkobjuserdata(L,1);
+	   void *tmp = (double*)self->data;
+	   int _index = lua_tonumber(L,2);
+	   double value = lua_tonumber(L,3);
+	   if(self->type_index >=0 &&  self->type_index <= 9)
+	   {
+			switch(self->type_index)
+			{
+			case 0:
+			case 1:
+				{
+					unsigned char *_tmp = (unsigned char*)tmp;
+					_tmp[_index] = (unsigned char)value;
+				}
+				break;
+			case 2:
+			case 3:
+				{
+					unsigned short *_tmp = (unsigned short*)tmp;
+					_tmp[_index] = (unsigned short)value;
+				}
+				break;
+			case 4:
+			case 5:
+				{
+					unsigned int *_tmp = (unsigned int*)tmp;
+					_tmp[_index] = (unsigned int)value;
+				}
+				break;
+			case 6:
+			case 7:
+				{
+					unsigned long *_tmp = (unsigned long*)tmp;
+					_tmp[_index] = (unsigned long)value;
+				}
+				break;
+			case 8:
+				{
+					float *_tmp = (float*)tmp;
+					_tmp[_index] = (float)value;
+				}
+				break;
+			case 9:
+				{
+					double *_tmp = (double*)tmp;
+					_tmp[_index] = (double)value;
+				}
+				break;
+			};
+	   }
+       return 0;
+
+    }
+
+    static int Index(lua_State *L)
+    {
+       c_array *self = checkobjuserdata(L,1);
+	   void *tmp = (double*)self->data;
+	   int _index = lua_tonumber(L,2);
+	   if(self->type_index >=0 &&  self->type_index <= 9)
+	   {
+			switch(self->type_index)
+			{
+			case 0:
+			case 1:
+				{
+					unsigned char *_tmp = (unsigned char*)tmp;
+					lua_pushnumber(L,_tmp[_index]);
+				}
+				break;
+			case 2:
+			case 3:
+				{
+					unsigned short *_tmp = (unsigned short*)tmp;
+					lua_pushnumber(L,_tmp[_index]);
+				}
+				break;
+			case 4:
+			case 5:
+				{
+					unsigned int *_tmp = (unsigned int*)tmp;
+					lua_pushnumber(L,_tmp[_index]);
+				}
+				break;
+			case 6:
+			case 7:
+				{
+					unsigned long *_tmp = (unsigned long*)tmp;
+					lua_pushnumber(L,_tmp[_index]);
+				}
+				break;
+			case 8:
+				{
+					float *_tmp = (float*)tmp;
+					lua_pushnumber(L,_tmp[_index]);
+				}
+				break;
+			case 9:
+				{
+					double *_tmp = (double*)tmp;
+					lua_pushnumber(L,_tmp[_index]);
+				}
+				break;
+			};
+	   }
+	   else
+		 lua_pushnil(L);
+	   return 1;
+    }
+private:
+    void *data;
+	int   type_index;
+};
+
+
+
 
 //用于向lua注册一个类
 template<typename T>
