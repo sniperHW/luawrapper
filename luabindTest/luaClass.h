@@ -481,6 +481,12 @@ class luaClassWrapper
             fields.insert(std::make_pair(std::string(name),mf));
         }
 
+        template<typename type,type (T::*field)>
+        static void GetMemberValueArray(T *self,lua_State *L)
+        {   
+			objPush<array_holder>(L,self->*field);
+        }
+
         //获取成员变量的值
         template<typename type,type (T::*field)>
         static void GetMemberValue(T *self,lua_State *L)
@@ -876,6 +882,15 @@ void registerField(const char *name)
     memberfield<T> mf;
     mf.gmv = luaClassWrapper<T>::GetMemberValue<type,field>;
     luaClassWrapper<T>::SetMemberValue<type,field>(mf,Int2Type<pointerTraits<type>::isPointer>());
+    luaClassWrapper<T>::InsertFields(name,mf);
+}
+
+template<typename T,typename type,type (T::*field)>
+void registerFieldArray(const char *name)
+{            
+    memberfield<T> mf;
+    mf.gmv = luaClassWrapper<T>::GetMemberValueArray<type,field>;
+    //luaClassWrapper<T>::SetMemberValue<type,field>(mf,Int2Type<pointerTraits<type>::isPointer>());
     luaClassWrapper<T>::InsertFields(name,mf);
 }
 

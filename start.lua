@@ -32,8 +32,11 @@ function t(tb)
 end
 
 function test1(c_arr)
-	c_arr[0] = 100
-	print(c_arr[1])
+	
+	c_arr.valb[1] = 100
+	--c_arr[0] = 100
+	--print(c_arr[1])
+	--print(c_arg.valb)
 	--show("hello world")
 	--local mt = getmetatable(tb);
 	--mt.tt = "a"

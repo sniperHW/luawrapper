@@ -29,6 +29,7 @@ class testa
 {
 public:
 	int vala;
+	int valb[10];
 };
 
 class testd
@@ -72,6 +73,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	lua_State *L = *(&lw);
 	kennyluainit(L,&lw);
 	c_array::register_c_array(L);
+
+	RegisterClass<testa>(L,"testa");
+	registerFieldArray<testa,int[10],&testa::valb>("valb");
+
 	//Integer64::Register2Lua(L);
 /*
 	//²âÊÔ×¢²áÈÎÒâC++º¯Êı
@@ -97,8 +102,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	int _array[10];
 	_array[1]= 8;
-	
-	call_luaFunction1<void,array_holder>("test1",L,_array);
+	testa tt;
+	call_luaFunction1<void>("test1",L,&tt);
 	printf("haha\n");
 	
 /*
