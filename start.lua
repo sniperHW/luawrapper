@@ -28,16 +28,17 @@ function Account:setBalance(val)
 end
 
 function t(tb)
-	--tb:func()
+	tb:func()
 end
 
-function test1(c_arr)
+function test1(tb)
+	t(tb)
 	
-	c_arr.valb[1] = 100
+	--c_arr.valb[1] = 100
 	--c_arr[0] = 100
 	--print(c_arr[1])
 	--print(c_arg.valb)
-	--show("hello world")
+	show("hello world")
 	--local mt = getmetatable(tb);
 	--mt.tt = "a"
 	--tb.tt

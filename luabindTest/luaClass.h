@@ -657,13 +657,15 @@ typedef int (*lua_fun)(lua_State*);
         memcpy(&func,t,sizeof(func));
 #endif
 
+template<typename RUNC_TYPE>
+class memberfunbinder{};
 
 //用于注册成员函数
 template<typename Ret,typename Cla>
-class memberfunbinder0
+class memberfunbinder<Ret(Cla::*)()>
 {
 public:
-
+	typedef Cla CLASS_TYPE;
     static int lua_cfunction(lua_State *L)
     {    
         objUserData<Cla> *obj = objUserData<Cla>::checkobjuserdata(L,1);
@@ -674,6 +676,7 @@ public:
 private:
 
     typedef typename Ret(Cla::*__func)();
+	
 
     
     template<typename Result> 
@@ -696,10 +699,10 @@ private:
 };
 
 template<typename Ret,typename Arg1,typename Cla>
-class memberfunbinder1
+class memberfunbinder<Ret(Cla::*)(Arg1)>
 {
 public:
-
+	typedef Cla CLASS_TYPE;
     static int lua_cfunction(lua_State *L)
     {
         objUserData<Cla> *obj = objUserData<Cla>::checkobjuserdata(L,1);
@@ -733,10 +736,10 @@ private:
 };
 
 template<typename Ret,typename Arg1,typename Arg2,typename Cla>
-class memberfunbinder2
+class memberfunbinder<Ret(Cla::*)(Arg1,Arg2)>
 {
 public:
-
+	typedef Cla CLASS_TYPE;
     static int lua_cfunction(lua_State *L)
     {
         objUserData<Cla> *obj = objUserData<Cla>::checkobjuserdata(L,1);
@@ -771,10 +774,10 @@ private:
 };
 
 template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename Cla>
-class memberfunbinder3
+class memberfunbinder<Ret(Cla::*)(Arg1,Arg2,Arg3)>
 {
 public:
-
+	typedef Cla CLASS_TYPE;
     static int lua_cfunction(lua_State *L)
     {
         objUserData<Cla> *obj = objUserData<Cla>::checkobjuserdata(L,1);
@@ -811,7 +814,7 @@ private:
 };
 
 template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename Arg4,typename Cla>
-class memberfunbinder4
+class memberfunbinder<Ret(Cla::*)(Arg1,Arg2,Arg3,Arg4)>
 {
 public:
 
@@ -895,55 +898,14 @@ void registerFieldArray(const char *name)
 }
 
 //注册类成员函数的接口
-template<typename Ret,typename T>
-void registerMemberFunction0(const char *fun_name,Ret(T::*_func)())
+template<typename FUNTOR>
+void registerMemberFunction(const char *fun_name,FUNTOR _func)//Ret(T::*_func)())
 {
-
-    memberfield<T> mf;
+    memberfield<memberfunbinder<FUNTOR>::CLASS_TYPE> mf;
     memcpy(&mf.mbfunc,&_func,sizeof(_func));
-    lua_fun fun = memberfunbinder0<Ret,T>::lua_cfunction;
+    lua_fun fun = memberfunbinder<FUNTOR>::lua_cfunction;	
     mf.mc = fun;
-    luaClassWrapper<T>::InsertFields(fun_name,mf);
-}
-
-template<typename Ret,typename Arg1,typename T>
-void registerMemberFunction1(const char *fun_name,Ret(T::*_func)(Arg1))
-{
-    memberfield<T> mf;
-    memcpy(&mf.mbfunc,&_func,sizeof(_func));
-    lua_fun fun = memberfunbinder1<Ret,Arg1,T>::GetFunction(fun_name,_func);
-    mf.mc = fun;
-    luaClassWrapper<T>::InsertFields(fun_name,mf); 
-}
-
-template<typename Ret,typename Arg1,typename Arg2,typename T>
-void registerMemberFunction2(const char *fun_name,Ret(T::*_func)(Arg1,Arg2))
-{
-    memberfield<T> mf;
-    memcpy(&mf.mbfunc,&_func,sizeof(_func));
-    lua_fun fun = memberfunbinder2<Ret,Arg1,Arg2,T>::GetFunction(fun_name,_func);
-    mf.mc = fun;
-    luaClassWrapper<T>::InsertFields(fun_name,mf); 
-}
-
-template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename T>
-void registerMemberFunction3(const char *fun_name,Ret(T::*_func)(Arg1,Arg2,Arg3))
-{
-    memberfield<T> mf;
-    memcpy(&mf.mbfunc,&_func,sizeof(_func));
-    lua_fun fun = memberfunbinder3<Ret,Arg1,Arg2,Arg3,T>::GetFunction(fun_name,_func);
-    mf.mc = fun;
-    luaClassWrapper<T>::InsertFields(fun_name,mf); 
-}
-
-template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename Arg4,typename T>
-void registerMemberFunction4(const char *fun_name,Ret(T::*_func)(Arg1,Arg2,Arg3,Arg4))
-{
-    memberfield<T> mf;
-    memcpy(&mf.mbfunc,&_func,sizeof(_func));
-    lua_fun fun = memberfunbinder4<Ret,Arg1,Arg2,Arg3,Arg4,T>::GetFunction(fun_name,_func);
-    mf.mc = fun;
-    luaClassWrapper<T>::InsertFields(fun_name,mf); 
+    luaClassWrapper<memberfunbinder<FUNTOR>::CLASS_TYPE>::InsertFields(fun_name,mf);
 }
 
 #include "ObjPush.h"

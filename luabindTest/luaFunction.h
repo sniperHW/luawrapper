@@ -187,10 +187,13 @@ private:
 
 
 typedef int (*lua_fun)(lua_State *);
+template<typename FUNCTOR>
+class funbinder{};
+
 //用于注册全局函数
 //无参
 template<typename Ret>
-class funbinder0
+class funbinder<Ret(*)()>
 {
 public:
 
@@ -225,15 +228,9 @@ private:
 
 };
 
-template<typename Ret>
-void registerFun0(lua_State *L,const char *name,Ret(*_func)())
-{
-	funbinder0<Ret>::pushfuctor(L,name,_func);
-}
-
 //单参
 template<typename Ret,typename Arg1>
-class funbinder1
+class funbinder<Ret(*)(Arg1)>
 {
 public:
 
@@ -270,15 +267,9 @@ private:
 
 };
 
-template<typename Ret,typename Arg1>
-void registerFun1(lua_State *L,const char *name,Ret(*_func)(Arg1))
-{
-	funbinder1<Ret,Arg1>::pushfuctor(L,name,_func);
-}
-
 //2参
 template<typename Ret,typename Arg1,typename Arg2>
-class funbinder2
+class funbinder<Ret(*)(Arg1,Arg2)>
 {
 public:
 
@@ -315,15 +306,9 @@ private:
 	}
 };
 
-template<typename Ret,typename Arg1,typename Arg2>
-void registerFun2(lua_State *L,const char *name,Ret(*_func)(Arg1,Arg2))
-{
-	funbinder2<Ret,Arg1,Arg2>::pushfuctor(L,name,_func);
-}
-
 //3参
 template<typename Ret,typename Arg1,typename Arg2,typename Arg3>
-class funbinder3
+class funbinder<Ret(*)(Arg1,Arg2,Arg3)>
 {
 public:
 
@@ -363,16 +348,9 @@ private:
 
 };
 
-
-template<typename Ret,typename Arg1,typename Arg2,typename Arg3>
-void registerFun3(lua_State *L,const char *name,Ret(*_func)(Arg1,Arg2,Arg3))
-{
-	funbinder3<Ret,Arg1,Arg2,Arg3>::pushfuctor(L,name,_func);
-}
-
 //4参
 template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename Arg4>
-class funbinder4
+class funbinder<Ret(*)(Arg1,Arg2,Arg3,Arg4)>
 {
 public:
 
@@ -412,12 +390,12 @@ private:
 	}
 };
 
-template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename Arg4>
-void registerFun4(lua_State *L,const char *name,Ret(*_func)(Arg1,Arg2,Arg3,Arg4))
-{
-	funbinder4<Ret,Arg1,Arg2,Arg3,Arg4>::pushfuctor(L,name,_func);
-}
 
+template<typename FUNTOR>
+void registerFun(lua_State *L,const char *name, FUNTOR _func)
+{
+	funbinder<FUNTOR>::pushfuctor(L,name,_func);
+}
 
 template<typename Ret>
 Ret call_luaFunction0(const char *funname,lua_State *L)

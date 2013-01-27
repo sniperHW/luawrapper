@@ -74,36 +74,36 @@ int _tmain(int argc, _TCHAR* argv[])
 	kennyluainit(L,&lw);
 	c_array::register_c_array(L);
 
-	RegisterClass<testa>(L,"testa");
-	registerFieldArray<testa,int[10],&testa::valb>("valb");
+	//RegisterClass<testa>(L,"testa");
+	//registerFieldArray<testa,int[10],&testa::valb>("valb");
 
 	//Integer64::Register2Lua(L);
-/*
+
 	//≤‚ ‘◊¢≤·»Œ“‚C++∫Ø ˝
-	registerFun1(L,"show",showmsg);
+	registerFun(L,"show",showmsg);
 	
 	//≤‚ ‘œÚlua◊¢≤·C++¿‡
 	RegisterClass<testb>(L,"testb");
 	registerField<testb,int,&testb::valb>("valb");
-	registerMemberFunction0("func",&testb::function);
+	registerMemberFunction("func",&testb::function);
 
 	RegisterClass<testc>(L,"testc");
 	DefParent<testb,testc>();
-	registerMemberFunction0("funcc",&testc::functionc);
+	registerMemberFunction("funcc",&testc::functionc);
 
 	testc tc;
 	tc.valb = 100;
 	testb tb;
-	tb.valb = 1000;*/
+	tb.valb = 1000;
 	//luatable lt;
 	//const void *ptr = &lt;
 	//lt.push_back(ptr);
 	//lt.push_back(__int64(17179869183));
 
-	int _array[10];
-	_array[1]= 8;
+	//registerFun(L,"showmsg",showmsg);
+
 	testa tt;
-	call_luaFunction1<void>("test1",L,&tt);
+	call_luaFunction1<void>("test1",L,&tb);
 	printf("haha\n");
 	
 /*
