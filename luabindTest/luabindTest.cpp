@@ -69,107 +69,29 @@ int _tmain(int argc, _TCHAR* argv[])
 {
 	luaWrapper lw;
 	lw.init();
-
 	lua_State *L = *(&lw);
 	kennyluainit(L,&lw);
-	c_array::register_c_array(L);
-
-	//RegisterClass<testa>(L,"testa");
-	//registerFieldArray<testa,int[10],&testa::valb>("valb");
-
-	//Integer64::Register2Lua(L);
-
+;
 	//测试注册任意C++函数
-	registerFun(L,"show",showmsg);
+	register_function(L,"show",showmsg);
 	
 	//测试向lua注册C++类
-	RegisterClass<testb>(L,"testb");
-	registerField<testb,int,&testb::valb>("valb");
-	registerMemberFunction("func",&testb::function);
+	register_class<testb>(L,"testb");
+	register_property("valb",&testb::valb);
+	register_member_function("func",&testb::function);
 
-	RegisterClass<testc>(L,"testc");
+	register_class<testc>(L,"testc");
 	DefParent<testb,testc>();
-	registerMemberFunction("funcc",&testc::functionc);
+	register_member_function("funcc",&testc::functionc);
 
 	testc tc;
 	tc.valb = 100;
 	testb tb;
 	tb.valb = 1000;
-	//luatable lt;
-	//const void *ptr = &lt;
-	//lt.push_back(ptr);
-	//lt.push_back(__int64(17179869183));
-
-	//registerFun(L,"showmsg",showmsg);
-
 	testa tt;
 	call_luaFunction1<void>("test1",L,&tb);
+	printf("%d\n",tb.valb);
 	printf("haha\n");
-	
-/*
-	printf("after call valb = %d\n",tb.valb);
-
-	
-	//测试调用返回table的lua函数
-	luatable ret = call_luaFunction0<luatable>("test2",L);
-	for(int i = 0; i < ret.size();++i)
-		printf("%d",any_cast<int>(ret[i]));
-	printf("\n");
-
-	//测试返回lua对象
-	luaObject account = call_luaFunction0<luaObject>("test3",L);
-	account.CallMemberFunction0<void>("show");
-	printf("%s\n",account.GetMemberValue<std::string>("name").c_str());
-	account.SetMemberValue<std::string>("name","sniperhuangwei");
-	//将改变后的对象返回到lua中
-    call_luaFunction1<void>("test4",L,account);
-*/
 	getchar();
-
-
 	return 0;
 }
-
-/*
-template<class T> void* GetFunAddr( T fun ) 
-{
-	return *(void**)&fun; 
-}
-template<class T> T     GetFunAddr( void* pFun ) 
-{
-	return *(T*)&pFun; 
-}
-
-class CBase
-{
-protected:
-	int m_nA;
-
-public:
-	CBase() { this->m_nA = 1; }
-};
-
-class CAA : public CBase
-{
-public:
-	virtual void fun() 
-	{
-		this->m_nA = 100; 
-	}
-	int m_nA;
-};
-
-int main()
-{
-	CAA* pAA = new CAA();
-	void* pAddr = GetFunAddr( &CAA::fun );
-	typedef void(CAA::*FunType)();
-	FunType fun2 = GetFunAddr<FunType>( pAddr );
-	FunType fun = &CAA::fun;//= *(FunType*)&pAddr;//GetFunAddr<FunType>( pAddr );
-	//(pAA->*(*(FunType*)&pAddr))();
-	int s = sizeof(FunType);
-	(pAA->*fun)();
-	(pAA->*fun2)();
-	return 0;
-}
-*/

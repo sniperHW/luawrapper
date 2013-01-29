@@ -241,23 +241,24 @@ struct memberfield
     {
     }
 
-    typedef void (*GMV)(T *,lua_State*);//获得成员变量值
-    typedef void (*SMV)(T *,lua_State*,void*);//设置成员变量值
+    typedef void (*GMV)(T *,lua_State*,void *(T::*));//获得成员变量值
+    typedef void (*SMV)(T *,lua_State*,void*,void *(T::*));//设置成员变量值
     typedef int (*MC)(lua_State*);//调用成员函数
     GMV gmv;
     SMV smv;
     MC  mc;
     membfun::_func mbfunc;
+	void *(T::*field);
 };
 
 template<typename T>
 class objUserData;
 
 template<typename T>
-void RegisterClass(lua_State *L,const char *name);
+void register_class(lua_State *L,const char *name);
 
-template<typename T,typename type,type (T::*field)>
-void registerField(const char *name);
+template<typename T,typename type>
+void register_property(const char *name,type (T::*field));
 
 
 class array_holder
@@ -271,173 +272,6 @@ public:
 	void *ptr;
 	int type_index;
 };
-
-class c_array
-{
-public:
-
-
-    static c_array *checkobjuserdata (lua_State *L,int index) {
-      void *ud = lua_touserdata(L,index);
-      luaL_argcheck(L, ud != NULL, 1, "userdata expected");
-      return (c_array*)ud;
-    }
-
-	static void register_c_array(lua_State *L)
-	{
-        luaL_getmetatable(L, "kenny.lualib");
-            
-        lua_pushstring(L,"c_array");
-
-        luaL_newmetatable(L, "c_array");
-        lua_pushstring(L, "__index");
-        lua_pushcfunction(L, &c_array::Index);
-        lua_settable(L, -3);  
-        
-        lua_pushstring(L, "__newindex");
-        lua_pushcfunction(L, &c_array::NewIndex);  
-        lua_rawset(L, -3);
-
-        lua_rawset(L,1);
-        lua_pop(L,1);		
-	}
-
-    static int NewObj(lua_State *L,void *ptr,int type_index) 
-    {
-
-		size_t nbytes = sizeof(c_array);
-		c_array *obj = (c_array*)lua_newuserdata(L, nbytes);
-		obj->data = ptr;
-		obj->type_index = type_index;
-		luaL_getmetatable(L, "kenny.lualib");
-		lua_pushstring(L,"c_array");
-		lua_gettable(L,-2);
-		lua_setmetatable(L, -3);
-		lua_pop(L,1);//pop mt kenny.lualib
-		return 1;
-    }
-
-
-
-    static int NewIndex(lua_State *L)
-    {
-
-       c_array *self = checkobjuserdata(L,1);
-	   void *tmp = (double*)self->data;
-	   int _index = lua_tonumber(L,2);
-	   double value = lua_tonumber(L,3);
-	   if(self->type_index >=0 &&  self->type_index <= 9)
-	   {
-			switch(self->type_index)
-			{
-			case 0:
-			case 1:
-				{
-					unsigned char *_tmp = (unsigned char*)tmp;
-					_tmp[_index] = (unsigned char)value;
-				}
-				break;
-			case 2:
-			case 3:
-				{
-					unsigned short *_tmp = (unsigned short*)tmp;
-					_tmp[_index] = (unsigned short)value;
-				}
-				break;
-			case 4:
-			case 5:
-				{
-					unsigned int *_tmp = (unsigned int*)tmp;
-					_tmp[_index] = (unsigned int)value;
-				}
-				break;
-			case 6:
-			case 7:
-				{
-					unsigned long *_tmp = (unsigned long*)tmp;
-					_tmp[_index] = (unsigned long)value;
-				}
-				break;
-			case 8:
-				{
-					float *_tmp = (float*)tmp;
-					_tmp[_index] = (float)value;
-				}
-				break;
-			case 9:
-				{
-					double *_tmp = (double*)tmp;
-					_tmp[_index] = (double)value;
-				}
-				break;
-			};
-	   }
-       return 0;
-
-    }
-
-    static int Index(lua_State *L)
-    {
-       c_array *self = checkobjuserdata(L,1);
-	   void *tmp = (double*)self->data;
-	   int _index = lua_tonumber(L,2);
-	   if(self->type_index >=0 &&  self->type_index <= 9)
-	   {
-			switch(self->type_index)
-			{
-			case 0:
-			case 1:
-				{
-					unsigned char *_tmp = (unsigned char*)tmp;
-					lua_pushnumber(L,_tmp[_index]);
-				}
-				break;
-			case 2:
-			case 3:
-				{
-					unsigned short *_tmp = (unsigned short*)tmp;
-					lua_pushnumber(L,_tmp[_index]);
-				}
-				break;
-			case 4:
-			case 5:
-				{
-					unsigned int *_tmp = (unsigned int*)tmp;
-					lua_pushnumber(L,_tmp[_index]);
-				}
-				break;
-			case 6:
-			case 7:
-				{
-					unsigned long *_tmp = (unsigned long*)tmp;
-					lua_pushnumber(L,_tmp[_index]);
-				}
-				break;
-			case 8:
-				{
-					float *_tmp = (float*)tmp;
-					lua_pushnumber(L,_tmp[_index]);
-				}
-				break;
-			case 9:
-				{
-					double *_tmp = (double*)tmp;
-					lua_pushnumber(L,_tmp[_index]);
-				}
-				break;
-			};
-	   }
-	   else
-		 lua_pushnil(L);
-	   return 1;
-    }
-private:
-    void *data;
-	int   type_index;
-};
-
-
-
 
 //用于向lua注册一个类
 template<typename T>
@@ -481,60 +315,53 @@ class luaClassWrapper
             fields.insert(std::make_pair(std::string(name),mf));
         }
 
-        template<typename type,type (T::*field)>
-        static void GetMemberValueArray(T *self,lua_State *L)
-        {   
-			objPush<array_holder>(L,self->*field);
-        }
-
         //获取成员变量的值
-        template<typename type,type (T::*field)>
-        static void GetMemberValue(T *self,lua_State *L)
+        template<typename type>
+        static void GetProperty(T *self,lua_State *L,void*(T::*field) )
         {   
-            GetMemberData<type,field>(self,L,Int2Type<!pointerTraits<type>::isPointer && IndexOf<internalType,pointerTraits<type>::PointeeType>::value == -1>());
+            GetPropertyData<type>(self,L,Int2Type<!pointerTraits<type>::isPointer && IndexOf<internalType,pointerTraits<type>::PointeeType>::value == -1>(),field);
         }
 
-        template<typename type,type (T::*field)>
-        static void SetMemberValue(memberfield<T> &mf,Int2Type<false>)
+        template<typename type>
+        static void SetProperty(memberfield<T> &mf,Int2Type<false>)
         {
-            mf.smv = SetMemberData<type,field>;
+            mf.smv = SetPropertyData<type>;
         }
 
-        template<typename type,type (T::*field)>
-        static void SetMemberValue(memberfield<T> &mf,Int2Type<true>)
+        template<typename type>
+        static void SetProperty(memberfield<T> &mf,Int2Type<true>)
         {
-         mf.smv = SetMemberPtr<type,field>;
+            mf.smv = SetPropertyPtr<type>;
         }
     private:
         
-        template<typename type,type (T::*field)>
-        static void GetMemberData(T *self,lua_State *L,Int2Type<true>)
+        template<typename type>
+        static void GetPropertyData(T *self,lua_State *L,Int2Type<true>,void*(T::*field))
         {
             objPush<type*>(L,&(self->*field));
         }
 
-        template<typename type,type (T::*field)>
-        static void GetMemberData(T *self,lua_State *L,Int2Type<false>)
+        template<typename type>
+        static void GetPropertyData(T *self,lua_State *L,Int2Type<false>,void*(T::*field))
         {
-            objPush<type>(L,(self->*field));
+            objPush<type>(L,(type)(self->*field));
         }
         
         //设置数值型成员变量值
-        template<typename type,type (T::*field)>
-        static void SetMemberData(T *self,lua_State *L,void *buf)
+        template<typename type>
+        static void SetPropertyData(T *self,lua_State *L,void *buf,void*(T::*field))
         {
-            //从lua中传进来的数值都是double型的
-            double *tmp = (double*)buf;
-            (self->*field) = (type)(*tmp);
-            objPush<type>(L,(self->*field));
+			double *tmp = (double*)buf;
+            *(type*)(&(self->*field)) = (type)*tmp;
+            objPush<type>(L,(type)(self->*field));
         }
 
         //设置指针型成员变量的值
-        template<typename type,type (T::*field)>
-        static void SetMemberPtr(T *self,lua_State *L,void *buf)
+        template<typename type>
+        static void SetPropertyPtr(T *self,lua_State *L,void *buf,void*(T::*field))
         {
-            (self->*field) = (*(type*)buf);
-            objPush<type>(L,(self->*field));
+            *(type*)(&(self->*field)) = (*(type*)buf);
+            objPush<type>(L,(type)(self->*field));
         }
         
     private:
@@ -588,9 +415,9 @@ public:
        if(it != luaClassWrapper<T>::fields.end())
        {
             if(isuserdata)
-                it->second.smv(self->ptr,L,&valu);
+                it->second.smv(self->ptr,L,&valu,it->second.field);
             else
-                it->second.smv(self->ptr,L,&valn);
+                it->second.smv(self->ptr,L,&valn,it->second.field);
        }
        return 0;
 
@@ -609,7 +436,7 @@ public:
                 lua_pushcclosure(L,it->second.mc,1);
             }
             else
-                it->second.gmv(obj->ptr,L);
+                it->second.gmv(obj->ptr,L,it->second.field);
         }
         else
         {
@@ -858,7 +685,7 @@ private:
 
 //注册一个类
 template<typename T>
-void RegisterClass(lua_State *L,const char *name)
+void register_class(lua_State *L,const char *name)
 {
     luaRegisterClass<T>::SetClassName(name);
     luaClassWrapper<T>::luaopen_objlib(L);
@@ -879,27 +706,19 @@ void DefParent()
 }
 
 //注册类的成员变量
-template<typename T,typename type,type (T::*field)>
-void registerField(const char *name)
+template<typename T,typename type>
+void register_property(const char *name,type (T::*field))
 {            
     memberfield<T> mf;
-    mf.gmv = luaClassWrapper<T>::GetMemberValue<type,field>;
-    luaClassWrapper<T>::SetMemberValue<type,field>(mf,Int2Type<pointerTraits<type>::isPointer>());
-    luaClassWrapper<T>::InsertFields(name,mf);
-}
-
-template<typename T,typename type,type (T::*field)>
-void registerFieldArray(const char *name)
-{            
-    memberfield<T> mf;
-    mf.gmv = luaClassWrapper<T>::GetMemberValueArray<type,field>;
-    //luaClassWrapper<T>::SetMemberValue<type,field>(mf,Int2Type<pointerTraits<type>::isPointer>());
+    mf.gmv = luaClassWrapper<T>::GetProperty<type>;
+	mf.field = (void*(T::*))field;
+    luaClassWrapper<T>::SetProperty<type>(mf,Int2Type<pointerTraits<type>::isPointer>());
     luaClassWrapper<T>::InsertFields(name,mf);
 }
 
 //注册类成员函数的接口
 template<typename FUNTOR>
-void registerMemberFunction(const char *fun_name,FUNTOR _func)//Ret(T::*_func)())
+void register_member_function(const char *fun_name,FUNTOR _func)//Ret(T::*_func)())
 {
     memberfield<memberfunbinder<FUNTOR>::CLASS_TYPE> mf;
     memcpy(&mf.mbfunc,&_func,sizeof(_func));

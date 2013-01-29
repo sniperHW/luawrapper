@@ -392,7 +392,7 @@ private:
 
 
 template<typename FUNTOR>
-void registerFun(lua_State *L,const char *name, FUNTOR _func)
+void register_function(lua_State *L,const char *name, FUNTOR _func)
 {
 	funbinder<FUNTOR>::pushfuctor(L,name,_func);
 }
