@@ -115,7 +115,7 @@ public:
 		Integer64 *i64self  = (Integer64 *)lua_touserdata(L,1);
 		luaL_argcheck(L, i64self  != NULL, 1, "userdata expected");	
 		char temp[64];
-		sprintf(temp, "%I64d", i64self->m_val);
+		sprintf(temp, "%lld", i64self->m_val);
 		lua_pushstring(L, temp);
 		return 1;
 	}

@@ -74,10 +74,10 @@ private:
 
 //对int64的特化成
 template<>
-class objPush<__int64>
+class objPush<int64_t>
 {
 public:
-	objPush(lua_State *L,__int64 value)
+	objPush(lua_State *L,int64_t value)
 	{
 		pushI64(L,value);
 	}
@@ -185,7 +185,7 @@ public:
 				}
 				else if(t_type == 13)
 				{
-					objPush<__int64> obj(L,any_cast<__int64>(arg[i]));
+					objPush<int64_t> obj(L,any_cast<int64_t>(arg[i]));
 				}
 			}
 
