@@ -21,7 +21,7 @@
 //c<->lua接口函数中获取lua传进来的参数
 
 template <typename Param1>
-bool GetParamFromLua1(lua_State *L,Param1 &param1)
+bool GetParamFromLua(lua_State *L,Param1 &param1)
 {
 	if(lua_gettop(L) < 1)
 		return false;
@@ -30,7 +30,7 @@ bool GetParamFromLua1(lua_State *L,Param1 &param1)
 }
 
 template <typename Param1,typename Param2>
-bool GetParamFromLua2(lua_State *L,Param1 &param1,Param2 &param2)
+bool GetParamFromLua(lua_State *L,Param1 &param1,Param2 &param2)
 {
 	if(lua_gettop(L) < 2)
 		return false;
@@ -40,7 +40,7 @@ bool GetParamFromLua2(lua_State *L,Param1 &param1,Param2 &param2)
 }
 
 template <typename Param1,typename Param2,typename Param3>
-bool GetParamFromLua3(lua_State *L,Param1 &param1,Param2 &param2,Param3 &param3)
+bool GetParamFromLua(lua_State *L,Param1 &param1,Param2 &param2,Param3 &param3)
 {
 	if(lua_gettop(L) < 3)
 		return false;
@@ -51,7 +51,7 @@ bool GetParamFromLua3(lua_State *L,Param1 &param1,Param2 &param2,Param3 &param3)
 }
 
 template <typename Param1,typename Param2,typename Param3,typename Param4>
-bool GetParamFromLua4(lua_State *L,Param1 &param1,Param2 &param2,Param3 &param3,Param4 &param4)
+bool GetParamFromLua(lua_State *L,Param1 &param1,Param2 &param2,Param3 &param3,Param4 &param4)
 {
 	if(lua_gettop(L) < 4)
 		return false;
@@ -63,7 +63,7 @@ bool GetParamFromLua4(lua_State *L,Param1 &param1,Param2 &param2,Param3 &param3,
 }
 
 template <typename Param1,typename Param2,typename Param3,typename Param4,typename Param5>
-bool GetParamFromLua5(lua_State *L,Param1 &param1,Param2 &param2,Param3 &param3,Param4 &param4,Param5 &param5)
+bool GetParamFromLua(lua_State *L,Param1 &param1,Param2 &param2,Param3 &param3,Param4 &param4,Param5 &param5)
 {
 	if(lua_gettop(L) < 5)
 		return false;
@@ -76,7 +76,7 @@ bool GetParamFromLua5(lua_State *L,Param1 &param1,Param2 &param2,Param3 &param3,
 }
 
 template <typename Param1,typename Param2,typename Param3,typename Param4,typename Param5,typename Param6>
-bool GetParamFromLua6(lua_State *L,Param1 &param1,Param2 &param2,Param3 &param3,Param4 &param4,Param5 &param5,Param6 &param6)
+bool GetParamFromLua(lua_State *L,Param1 &param1,Param2 &param2,Param3 &param3,Param4 &param4,Param5 &param5,Param6 &param6)
 {
 	if(lua_gettop(L) < 6)
 		return false;
@@ -90,7 +90,7 @@ bool GetParamFromLua6(lua_State *L,Param1 &param1,Param2 &param2,Param3 &param3,
 }
 
 template <typename Param1,typename Param2,typename Param3,typename Param4,typename Param5,typename Param6,typename Param7>
-bool GetParamFromLua7(lua_State *L,Param1 &param1,Param2 &param2,Param3 &param3,Param4 &param4,Param5 &param5,Param6 &param6,Param7 &param7)
+bool GetParamFromLua(lua_State *L,Param1 &param1,Param2 &param2,Param3 &param3,Param4 &param4,Param5 &param5,Param6 &param6,Param7 &param7)
 {
 	if(lua_gettop(L) < 7)
 		return false;
@@ -105,7 +105,7 @@ bool GetParamFromLua7(lua_State *L,Param1 &param1,Param2 &param2,Param3 &param3,
 }
 
 template <typename Param1,typename Param2,typename Param3,typename Param4,typename Param5,typename Param6,typename Param7,typename Param8>
-bool GetParamFromLua8(lua_State *L,Param1 &param1,Param2 &param2,Param3 &param3,Param4 &param4,Param5 &param5,Param6 &param6,Param7 &param7,Param8 &param8)
+bool GetParamFromLua(lua_State *L,Param1 &param1,Param2 &param2,Param3 &param3,Param4 &param4,Param5 &param5,Param6 &param6,Param7 &param7,Param8 &param8)
 {
 	if(lua_gettop(L) < 8)
 		return false;
