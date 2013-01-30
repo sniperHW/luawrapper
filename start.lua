@@ -54,5 +54,13 @@ function test4()
 	return 1,2,3,4,5
 end
 
+function test5(lt)
+	print(lt[1])
+	print(lt[2])
+	print(lt[3])
+	print(lt[4])
+	print(lt[5])
+end
+
 
 

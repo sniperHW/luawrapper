@@ -100,6 +100,12 @@ int main()
 	ac.SetMemberValue<int>("balance",1000);
 	printf("balance:%d\n",ac.GetMemberValue<int>("balance"));
 	
+	luatable lt_in;
+	for(int i = 0; i < 5;++i)
+		lt_in.push_back(i);
+	call_luaFunction<void>("test5",L,lt_in);	
+	
+	
 	getchar();
 	return 0;
 }

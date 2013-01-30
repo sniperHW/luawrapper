@@ -24,8 +24,6 @@
 #include "TypeList.h"
 #include "Trait.h"
 
-char* ltoa(long, char*, int);
-
 typedef LOKI_TYPELIST_12(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,void,int64_t) internalType;
 
 class luaObject;
@@ -226,8 +224,8 @@ inline std::string any_cast(const any & operand)
 	{
 		//数值型,尝试转换string
 		char tmp[32];
-		unsigned long value = any_cast<unsigned long>(operand);
-		ltoa(value,tmp,10);
+		int64_t value = any_cast<int64_t>(operand);
+		snprintf(tmp,32,"%lld",value);
 		return std::string(tmp);
 
 	}
