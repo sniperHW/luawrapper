@@ -47,9 +47,7 @@ extern "C"
 			free(ptr);
 			return NULL;
 		}else if(ptr ==0)
-		{
 			return malloc(nsize);
-		}
 		return realloc(ptr, nsize);
 	}
 };
@@ -64,9 +62,7 @@ int NewObj(lua_State *L,void *ptr,const char *classname)
     lua_pushstring(L,classname);
     lua_gettable(L,-2);
     lua_setmetatable(L, -3);
-      
     lua_pop(L,1);//pop mt kenny.lualib
-    
     return 1;
 }
 

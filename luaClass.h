@@ -148,9 +148,7 @@ struct memberfield
 
     template<typename PARENT>
     memberfield(const memberfield<PARENT> &p):gmv((GMV)p.gmv),smv((SMV)p.smv),mc((MC)p.mc),
-		mbfunc(p.mbfunc),field(p.field)
-    {
-    }
+		mbfunc(p.mbfunc),field(p.field) {}
 
     typedef void (*GMV)(T *,lua_State*,void *(T::*));//获得成员变量值
     typedef void (*SMV)(T *,lua_State*,void*,void *(T::*));//设置成员变量值
@@ -164,7 +162,7 @@ struct memberfield
 
 template<typename T>
 class objUserData;
-
+/*
 class array_holder
 {
 public:
@@ -176,7 +174,7 @@ public:
 	void *ptr;
 	int type_index;
 };
-
+*/
 ///////////////////////////////////////
 
 template<typename T,typename type>
@@ -343,9 +341,7 @@ public:
                 it->second.gmv(obj->ptr,L,it->second.field);
         }
         else
-        {
             lua_pushnil(L);
-        }
         return 1;
 
     }
@@ -371,7 +367,7 @@ typedef int (*lua_fun)(lua_State*);
         memcpy(&func,t,sizeof(func));
 #endif
 
-template<typename RUNC_TYPE>
+template<typename FUNC>
 class memberfunbinder{};
 
 //用于注册成员函数
@@ -397,8 +393,7 @@ private:
     static int doCall(lua_State *L,Cla *cla,Int2Type<false>)
     {
         _GETFUNC;
-        Result ret = (cla->*func)();
-        push_obj<Result>(L,ret);
+        push_obj<Result>(L,(cla->*func)());
         return 1;
     }
 
@@ -434,8 +429,7 @@ private:
     static int doCall(lua_State *L,Cla *cla,Arg1 arg1,Int2Type<false>)
     {
         _GETFUNC;
-        Result ret = (cla->*func)(arg1);
-        push_obj<Result>(L,ret);
+        push_obj<Result>(L,(cla->*func)(arg1));
         return 1;
     }
 
@@ -473,8 +467,7 @@ private:
     static int doCall(lua_State *L,Cla *cla,Arg1 arg1,Arg2 arg2,Int2Type<false>)
     {
         _GETFUNC;
-        Result ret = (cla->*func)(arg1,arg2);
-        push_obj<Result>(L,ret);
+        push_obj<Result>(L,(cla->*func)(arg1,arg2));
         return 1;
     }
 
@@ -513,8 +506,7 @@ private:
     static int doCall(lua_State *L,Cla *cla,Arg1 arg1,Arg2 arg2,Arg3 arg3,Int2Type<false>)
     {
         _GETFUNC;
-        Result ret = (cla->*func)(arg1,arg2,arg3);
-        push_obj<Result>(L,ret);
+        push_obj<Result>(L,(cla->*func)(arg1,arg2,arg3));
         return 1;
     }
 
@@ -555,8 +547,7 @@ private:
     static int doCall(lua_State *L,Cla *cla,Arg1 arg1,Arg2 arg2,Arg3 arg3,Arg4 arg4,Int2Type<false>)
     {
         _GETFUNC;
-        Result ret = (cla->*func)(arg1,arg2,arg3,arg4);
-        push_obj<Result>(L,ret);
+        push_obj<Result>(L,(cla->*func)(arg1,arg2,arg3,arg4));
         return 1;
     }
 
@@ -577,9 +568,7 @@ void DefParent(Int2Type<false>)
      typename std::map<std::string,memberfield<Parent> >::iterator it = parent_fields.begin();
      typename std::map<std::string,memberfield<Parent> >::iterator end = parent_fields.end();
      for( ; it != end; ++it)
-     {
          filds.insert(std::make_pair(it->first,it->second));
-     }
 }
 
 template<typename Parent,typename T>

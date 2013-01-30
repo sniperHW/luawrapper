@@ -43,9 +43,7 @@ public:
 		}
 
 	luaObject()
-	:m_iKeyIndex(0),m_plState(0),counter(NULL)
-	{
-	}
+	:m_iKeyIndex(0),m_plState(0),counter(NULL){}
 
 	luaObject &operator = (const luaObject & other)
 	{

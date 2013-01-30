@@ -115,13 +115,9 @@ public:
 	{
 		lua_newtable(L);
 		for(int i = 0; i < (int)arg.size(); ++i)
-		{
-			//lua_pushnumber(L,i+1);
-			
+		{		
 			if(arg[0].empty())
-			{
 				lua_pushnil(L);
-			}
 			else
 			{	
 
@@ -172,21 +168,13 @@ public:
 					};
 				}
 				else if(t_type == 10)
-				{
 					lua_pushstring(L,any_cast<std::string>(arg[i]).c_str());
-				}
 				else if(t_type == 11)
-				{
 					objPush<luaObject> obj(L,any_cast<luaObject>(arg[i]));
-				}
 				else if(t_type == 12)
-				{
 					objPush<luatable> obj(L,any_cast<luatable>(arg[i]));
-				}
 				else if(t_type == 13)
-				{
 					objPush<int64_t> obj(L,any_cast<int64_t>(arg[i]));
-				}
 			}
 
 			lua_rawseti(L,-2,i+1);

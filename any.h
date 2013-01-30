@@ -80,10 +80,7 @@ class any
 {
 public: // structors
 
-   any(): content(0),counter(0)
-   {
-
-   }
+   any(): content(0),counter(0){}
 
    template<typename ValueType>
    any(const ValueType & value)
@@ -181,9 +178,7 @@ public:
     {
       public: // structors
 
-		virtual ~placeholder()
-        {
-        }
+		virtual ~placeholder(){}
 
      };
 
@@ -193,12 +188,9 @@ public:
        public: // structors
 
          holder(const ValueType & value)
-           : held(value)
-         {
-         }
+           : held(value){}
        public: // representation
-
-          ValueType held;
+			 ValueType held;
 
       };
 
@@ -213,8 +205,7 @@ public: // representation (public so any_cast can be non-friend)
 template<typename ValueType>
 inline ValueType any_cast(const any & operand)
 {
-	any::holder<ValueType> * tmp = static_cast<any::holder<ValueType> *>(operand.content);
-	return tmp->held;
+	return static_cast<any::holder<ValueType> *>(operand.content)->held;
 }
 
 template<>
@@ -244,9 +235,7 @@ class lua_results
 {
 public:
 
-	lua_results():counter(new int(1)),rets(new std::vector<any>),_rets(*rets)
-	{
-	}
+	lua_results():counter(new int(1)),rets(new std::vector<any>),_rets(*rets){}
 
 	~lua_results()
 	{

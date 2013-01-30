@@ -118,9 +118,7 @@ inline luatable popvalue(lua_State *L)
 		{
 			const void *r = lua_touserdata(L,-1);
 			if(((Integer64*)r)->GetFlag() == 0XFEDC1234)
-			{
 				ret.push_back(((Integer64*)r)->GetValue());
-			}
 			else if(((objUserData<void>*)r)->m_flag == 0x1234AFEC)
 				ret.push_back((const void*)((objUserData<void>*)r)->ptr);
 			else
@@ -137,9 +135,7 @@ inline luatable popvalue(lua_State *L)
 		{
 			//获取元表，如果没有原表就是简单的table，否则是object
 			if(0 == lua_getmetatable(L,-1))
-			{
 				ret.push_back(popvalue<luatable>(L));
-			}
 			else
 			{
 				lua_pop(L,1);
@@ -149,7 +145,6 @@ inline luatable popvalue(lua_State *L)
 		else
 			throw std::string("lua函数返回了不支持的类型");
 	}
-
 	lua_pop(L,1);
 	return ret;
 }

@@ -46,10 +46,8 @@ class doLuaCall
 public:
 	static Ret doCall(lua_State *L,int nArgs,int errFunc,bool callByObject = false)
 	{
-		
 		typedef LOKI_TYPELIST_1(void) voidType;
 		return call(L,nArgs,errFunc,Int2Type<IndexOf<voidType,Ret>::value == 0>(),callByObject);
-		
 	}
 private:
 	//返回void
@@ -62,26 +60,16 @@ private:
 			lua_pop(L,1);
 			throw err;
 		}
-
 		if(callByObject)
-		{
-			//将object从栈中弹出
 			lua_pop(L,1);
-		}
-
 	}
 	
 	//有返回值
 	static Ret call(lua_State *L,int nArgs,int errFunc,Int2Type<false>,bool callByObject)
 	{
-
 		Ret ret = _call(L,nArgs,IndexOf<retarrayType,Ret>::value+2,errFunc,Int2Type<IndexOf<retarrayType,Ret>::value == -1>(),callByObject);
 		if(callByObject)
-		{
-			//将object从栈中弹出
 			lua_pop(L,1);
-		}
-
 		return ret;
 	}
 
@@ -110,19 +98,11 @@ private:
 		}
 
 		if(callByObject)
-		{
 			if (lua_gettop(L) - 1 != nRets)
-			{
 				throw std::string("返回值数量不正确");
-			}
-		}
 		else
-		{
 			if (lua_gettop(L) != nRets)
-			{
 				throw std::string("返回值数量不正确");
-			}
-		}
 
 		Ret rets;
 		std::list<any> tmp;
@@ -177,8 +157,7 @@ private:
 	template<typename Result> 
 	static int doCall(lua_State *L,__func func,Int2Type<false>)
 	{
-		Result ret = func();
-		push_obj<Result>(L,ret);
+		push_obj<Result>(L,func());
 		return 1;
 	}
 
@@ -216,8 +195,7 @@ private:
 	template<typename Result> 
 	static int doCall(lua_State *L,Arg1 arg1,__func func,Int2Type<false>)
 	{
-		Result ret = func(arg1);
-		push_obj<Result>(L,ret);
+		push_obj<Result>(L,func(arg1));
 		return 1;
 	}
 	template<typename Result> 
@@ -255,8 +233,7 @@ private:
 	template<typename Result> 
 	static int doCall(lua_State *L,Arg1 arg1,Arg2 arg2,__func func,Int2Type<false>)
 	{
-		Result ret = func(arg1,arg2);
-		push_obj<Result>(L,ret);
+		push_obj<Result>(L,func(arg1,arg2));
 		return 1;
 	}
 
@@ -296,8 +273,7 @@ private:
 	template<typename Result> 
 	static int doCall(lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 arg3,__func func,Int2Type<false>)
 	{
-		Result ret = func(arg1,arg2,arg3);
-		push_obj<Result>(L,ret);
+		push_obj<Result>(L,func(arg1,arg2,arg3));
 		return 1;
 	}
 
@@ -339,8 +315,7 @@ private:
 	template<typename Result> 
 	static int doCall(lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 arg3,Arg4 arg4,__func func,Int2Type<false>)
 	{
-		Result ret = func(arg1,arg2,arg3,arg4);
-		push_obj<Result>(L,ret);
+		push_obj<Result>(L,func(arg1,arg2,arg3,arg4));
 		return 1;
 	}
 

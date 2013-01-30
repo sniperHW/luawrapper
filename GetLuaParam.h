@@ -62,10 +62,7 @@ inline const void *getLuaParam(lua_State *L,int index)
 {
 	const void *ret;
 	if(!lua_isuserdata(L,index))
-	{
-		//lightuserdata
 		ret = lua_touserdata(L,index);
-	}
 	else
 	{
 		//userdata
@@ -124,9 +121,7 @@ inline luatable getLuaParam(lua_State *L,int index)
 			
 		}
 		else
-		{
 			throw std::string("lua函数提供了不支持的参数类型");
-		}
 	}
 
 	//lua_pop(L,1);
