@@ -26,7 +26,6 @@
 #include "any.h"
 #include <iostream>
 #include <vector>
-
 //template<typename T>
 //class objPush;
 
@@ -40,7 +39,7 @@ T popvalue(lua_State *L);
 //最大支持从lua中返回10个值
 typedef LOKI_TYPELIST_9(lua_results<2>,lua_results<3>,lua_results<4>,lua_results<5>,lua_results<6>,lua_results<7>,lua_results<8>,lua_results<9>,lua_results<10>) retarrayType;
 
-
+void _GetRetFromStack(std::list<any> &out,lua_State *L);
 template<typename Ret>
 class doLuaCall
 {
@@ -99,42 +98,6 @@ private:
 		}
 		return popvalue<Ret>(L);
 	}
-
-
-	static void GetRetFromStack(std::list<any> &out,lua_State *L)
-	{
-		if(lua_isnil(L,-1))
-		{
-			out.push_front(any());
-			lua_pop(L,-1);
-		}
-		else if(lua_isuserdata(L,-1))
-		{
-			out.push_front(popvalue<const void*>(L));
-		}		
-		else if(lua_isnumber(L,-1))
-		{
-			out.push_front(popvalue<__int64>(L));
-		}		
-		else if(lua_isstring(L,-1))
-		{
-			out.push_front(popvalue<std::string>(L));
-		}
-		else if(lua_isboolean(L,-1))
-		{
-			out.push_front(popvalue<bool>(L));
-		}
-		else if(lua_istable(L,-1))//返回一个表，需要做特殊处理
-		{
-			out.push_front(popvalue<luatable>(L));
-		}
-
-		else
-		{
-			throw std::string("lua函数返回了不支持的类型");
-		}
-	}
-
 	//多个返回值
 	static Ret _call(lua_State *L,int nArgs,int nRets,int errFunc,Int2Type<false>,bool callByObject)
 	{
@@ -166,16 +129,13 @@ private:
 		
 		int c = nRets;
 		while(c-- > 0)
-			GetRetFromStack(tmp,L);
+			_GetRetFromStack(tmp,L);
 
 		std::list<any>::iterator it = tmp.begin();
 		std::list<any>::iterator end = tmp.end();
 
 		for( ; it != end; ++it)
-		{
 			rets._rets.push_back(*it);
-		}
-
 		return rets;
 		
 	}
@@ -400,14 +360,14 @@ void register_function(lua_State *L,const char *name, FUNTOR _func)
 }
 
 template<typename Ret>
-Ret call_luaFunction0(const char *funname,lua_State *L)
+Ret call_luaFunction(const char *funname,lua_State *L)
 {
 	lua_getglobal(L,funname);
 	return doLuaCall<Ret>::doCall(L,0,0);
 }
 
 template<typename Ret,typename Arg1>
-Ret call_luaFunction1(const char *funname,lua_State *L,Arg1 arg1)
+Ret call_luaFunction(const char *funname,lua_State *L,Arg1 arg1)
 {
 	lua_getglobal(L,funname);
 	push_obj<Arg1>(L,arg1);
@@ -415,7 +375,7 @@ Ret call_luaFunction1(const char *funname,lua_State *L,Arg1 arg1)
 }
 
 template<typename Ret,typename Arg1,typename Arg2>
-Ret call_luaFunction2(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2)
+Ret call_luaFunction(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2)
 {
 	lua_getglobal(L,funname);
 	push_obj<Arg1>(L,arg1);
@@ -424,7 +384,7 @@ Ret call_luaFunction2(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2)
 }
 
 template<typename Ret,typename Arg1,typename Arg2,typename Arg3>
-Ret call_luaFunction3(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 arg3)
+Ret call_luaFunction(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 arg3)
 {
 	lua_getglobal(L,funname);
 	push_obj<Arg1>(L,arg1);
@@ -434,7 +394,7 @@ Ret call_luaFunction3(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 
 }
 
 template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename Arg4>
-Ret call_luaFunction4(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 arg3,Arg4 arg4)
+Ret call_luaFunction(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 arg3,Arg4 arg4)
 {
 	lua_getglobal(L,funname);
 	push_obj<Arg1>(L,arg1);

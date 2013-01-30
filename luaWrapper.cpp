@@ -97,6 +97,87 @@ static T* _GetPointer(lua_State *L,int index)
 	return NULL;
 }
 
+static const struct luaL_Reg i64Lib[] = {
+	{"new",newI64},
+	{NULL,NULL},
+};
+
+void Integer64::Register2Lua(lua_State *L)
+{
+	luaL_getmetatable(L, "kenny.lualib");
+	lua_pushstring(L,"int64");
+	lua_newtable(L);
+
+	
+	lua_pushstring(L, "__add");
+	lua_pushcfunction(L, i64Add);
+	lua_rawset(L, -3);
+
+	lua_pushstring(L, "__sub");
+	lua_pushcfunction(L, i64Sub);
+	lua_rawset(L, -3);
+
+	lua_pushstring(L, "__div");
+	lua_pushcfunction(L, i64Div);
+	lua_rawset(L, -3); 
+
+	lua_pushstring(L, "__mul");
+	lua_pushcfunction(L, i64Mul);
+	lua_rawset(L, -3); 
+
+	lua_pushstring(L, "__mod");
+	lua_pushcfunction(L, i64Mod);
+	lua_rawset(L, -3);
+
+	lua_pushstring(L, "__eq");
+	lua_pushcfunction(L, i64Eq);
+	lua_rawset(L, -3);
+
+	lua_pushstring(L, "__lt");
+	lua_pushcfunction(L, i64Lt);
+	lua_rawset(L, -3);
+
+	lua_pushstring(L, "__le");
+	lua_pushcfunction(L, i64Le);
+	lua_rawset(L, -3);
+
+	lua_pushstring(L, "__tostring");
+	lua_pushcfunction(L, i64toString);
+	lua_rawset(L, -3);
+
+	//just for test
+	//lua_pushstring(L,"__gc");
+	//lua_pushcfunction(L, i64Destroy);
+	//lua_rawset(L, -3);
+
+	lua_rawset(L,1);
+	lua_pop(L,1);
+	luaL_register(L,"i64",i64Lib);
+	lua_pop(L,1);
+	
+}
+
+void _GetRetFromStack(std::list<any> &out,lua_State *L)
+{
+	if(lua_isnil(L,-1))
+	{
+		out.push_front(any());
+		lua_pop(L,-1);
+	}
+	else if(lua_isuserdata(L,-1))
+		out.push_front(popvalue<const void*>(L));	
+	else if(lua_isnumber(L,-1))
+		out.push_front(popvalue<int64_t>(L));	
+	else if(lua_isstring(L,-1))
+		out.push_front(popvalue<std::string>(L));
+	else if(lua_isboolean(L,-1))
+		out.push_front(popvalue<bool>(L));
+	else if(lua_istable(L,-1))//返回一个表，需要做特殊处理
+		out.push_front(popvalue<luatable>(L));
+	else
+		throw std::string("lua函数返回了不支持的类型");
+}
+
 
 
 

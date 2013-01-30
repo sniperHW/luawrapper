@@ -31,41 +31,12 @@ function t(tb)
 	tb:func()
 end
 
-function test1(tb)
+function test1(tb,i64)
 	t(tb)
-	
-	--c_arr.valb[1] = 100
-	--c_arr[0] = 100
-	--print(c_arr[1])
-	--print(c_arg.valb)
 	show("hello world")
 	print(tb.valb)
 	tb.valb = 10
-	--local mt = getmetatable(tb);
-	--mt.tt = "a"
-	--tb.tt
-	--mt.func()
-	--print(mt.func())
-	--printf(mt.func);
-	--print("tb.valb = " .. tb.valb)
-	--tb.valb = 200
-	--tc:func()
-	--tb:func()
-	--tc:funcc()
-	--tb()
-	--local i = i64.new(100)
-	--print(i)
-	--local mt = getmetatable(i)
-	--print(mt)
-	--local mt2 = getmetatable(tb2)
-	--print(mt2)
-	--print(tb.valb)
-	--local i2 = i64.new()
-	--print(i)
-	--local i3 = i + i2
-	
-	--print(i)
-	--print("" .. i)
+	print(i64)
 end
 
 function test2()
@@ -79,8 +50,8 @@ function test3()
 	return account
 end
 
-function test4(account)
-	print(account.name)
+function test4()
+	return 1,2,3,4,5
 end
 
 

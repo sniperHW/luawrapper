@@ -100,25 +100,15 @@ inline luatable getLuaParam(lua_State *L,int index)
 		lua_rawgeti(L,index,i);
 		
 		if(lua_isnil(L,-1))
-		{
 			ret.push_back(any());
-		}
 		else if(lua_isuserdata(L,-1))
-		{
 			ret.push_back(popvalue<const void*>(L));
-		}
 		else if(lua_isnumber(L,-1))
-		{
-			ret.push_back(popvalue<int>(L));
-		}		
+			ret.push_back(popvalue<int64_t>(L));	
 		else if(lua_isstring(L,-1))
-		{
 			ret.push_back(popvalue<std::string>(L));
-		}
 		else if(lua_isboolean(L,-1))
-		{
 			ret.push_back(popvalue<bool>(L));
-		}
 		else if(lua_istable(L,-1))
 		{
 			//获取元表，如果没有原表就是简单的table，否则是object

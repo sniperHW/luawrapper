@@ -24,6 +24,8 @@
 #include "TypeList.h"
 #include "Trait.h"
 
+char* ltoa(long, char*, int);
+
 typedef LOKI_TYPELIST_12(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,void,int64_t) internalType;
 
 class luaObject;

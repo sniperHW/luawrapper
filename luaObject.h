@@ -117,14 +117,14 @@ public:
 	}
 
 	template<typename Ret>
-	Ret CallMemberFunction0(const char *name)
+	Ret CallMemberFunction(const char *name)
 	{
 		PREPARE(m_plState,m_iKeyIndex);
 		return doLuaCall<Ret>::doCall(m_plState,1,0,true);
 	}
 
 	template<typename Ret,typename Arg1>
-	Ret CallMemberFunction1(const char *name,Arg1 arg1)
+	Ret CallMemberFunction(const char *name,Arg1 arg1)
 	{
 		PREPARE(m_plState,m_iKeyIndex);
 		push_obj<Arg1>(m_plState,arg1);
@@ -132,7 +132,7 @@ public:
 	}
 
 	template<typename Ret,typename Arg1,typename Arg2>
-	Ret CallMemberFunction2(const char *name,Arg1 arg1,Arg2 arg2)
+	Ret CallMemberFunction(const char *name,Arg1 arg1,Arg2 arg2)
 	{
 		PREPARE(m_plState,m_iKeyIndex);
 		push_obj<Arg1>(m_plState,arg1);
@@ -141,7 +141,7 @@ public:
 	}
 
 	template<typename Ret,typename Arg1,typename Arg2,typename Arg3>
-	Ret CallMemberFunction3(const char *name,Arg1 arg1,Arg2 arg2,Arg3 arg3)
+	Ret CallMemberFunction(const char *name,Arg1 arg1,Arg2 arg2,Arg3 arg3)
 	{
 		PREPARE(m_plState,m_iKeyIndex);
 		push_obj<Arg1>(m_plState,arg1);
@@ -151,7 +151,7 @@ public:
 	}
 
 	template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename Arg4>
-	Ret CallMemberFunction3(const char *name,Arg1 arg1,Arg2 arg2,Arg3 arg3,Arg4 arg4)
+	Ret CallMemberFunction(const char *name,Arg1 arg1,Arg2 arg2,Arg3 arg3,Arg4 arg4)
 	{
 		PREPARE(m_plState,m_iKeyIndex);
 		push_obj<Arg1>(m_plState,arg1);

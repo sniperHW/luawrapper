@@ -6,22 +6,12 @@
 #include "any.h"
 #include <string.h>
 
-
-//extern std::string luaInvokeName;
-
 template<typename T>
 void push_obj(lua_State *L,const T obj);
 
 //取出栈顶的值，通知将其出栈
 template<typename T>
 T popvalue(lua_State *L);
-
-int newI64(lua_State *L);
-static const struct luaL_Reg i64Lib[] = {
-	{"new",newI64},
-	{NULL,NULL},
-};
-
 class Integer64
 {
 public:
@@ -36,63 +26,7 @@ public:
 	}
 
 	int GetFlag() const{return m_flag;}
-
-	static void Register2Lua(lua_State *L)
-	{
-		luaL_getmetatable(L, "kenny.lualib");
-		lua_pushstring(L,"int64");
-		lua_newtable(L);
-
-		
-		lua_pushstring(L, "__add");
-		lua_pushcfunction(L, i64Add);
-		lua_rawset(L, -3);
-
-		lua_pushstring(L, "__sub");
-		lua_pushcfunction(L, i64Sub);
-		lua_rawset(L, -3);
-
-		lua_pushstring(L, "__div");
-		lua_pushcfunction(L, i64Div);
-		lua_rawset(L, -3); 
-
-		lua_pushstring(L, "__mul");
-		lua_pushcfunction(L, i64Mul);
-		lua_rawset(L, -3); 
-
-		lua_pushstring(L, "__mod");
-		lua_pushcfunction(L, i64Mod);
-		lua_rawset(L, -3);
-
-		lua_pushstring(L, "__eq");
-		lua_pushcfunction(L, i64Eq);
-		lua_rawset(L, -3);
-
-		lua_pushstring(L, "__lt");
-		lua_pushcfunction(L, i64Lt);
-		lua_rawset(L, -3);
-
-		lua_pushstring(L, "__le");
-		lua_pushcfunction(L, i64Le);
-		lua_rawset(L, -3);
-
-		lua_pushstring(L, "__tostring");
-		lua_pushcfunction(L, i64toString);
-		lua_rawset(L, -3);
-
-		//just for test
-		//lua_pushstring(L,"__gc");
-		//lua_pushcfunction(L, i64Destroy);
-		//lua_rawset(L, -3);
-
-		lua_rawset(L,1);
-		lua_pop(L,1);
-		luaL_register(L,"i64",i64Lib);
-		lua_pop(L,1);
-		
-	}
-	
-
+	static void Register2Lua(lua_State *L);
 	static void setmetatable(lua_State *L)
 	{
 		luaL_getmetatable(L, "kenny.lualib");
@@ -230,13 +164,6 @@ struct memberfield
 
 template<typename T>
 class objUserData;
-
-template<typename T>
-void register_class(lua_State *L,const char *name);
-
-template<typename T,typename type>
-void register_property(const char *name,type (T::*field));
-
 
 class array_holder
 {
@@ -656,18 +583,19 @@ void DefParent(Int2Type<false>)
 }
 
 template<typename Parent,typename T>
-void DefParent(Int2Type<true>)
-{
-}
+void DefParent(Int2Type<true>){}
 
-//注册一个类
-template<typename T,typename Parent>
+//注册一个类,最多支持继承自4个基类
+template<typename T,typename Parent1 = void,typename Parent2 = void,typename Parent3 = void,typename Parent4 = void>
 void register_class(lua_State *L,const char *name)
 {
     luaRegisterClass<T>::SetClassName(name);
     luaClassWrapper<T>::luaopen_objlib(L);
     luaRegisterClass<T>::SetRegister();
-	DefParent<Parent,T>(Int2Type<isVoid<Parent>::is_Void>());
+	DefParent<Parent1,T>(Int2Type<isVoid<Parent1>::is_Void>());
+	DefParent<Parent2,T>(Int2Type<isVoid<Parent2>::is_Void>());
+	DefParent<Parent3,T>(Int2Type<isVoid<Parent3>::is_Void>());
+	DefParent<Parent4,T>(Int2Type<isVoid<Parent4>::is_Void>());
 }
 
 //注册类的成员变量

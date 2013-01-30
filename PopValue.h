@@ -78,10 +78,25 @@ inline bool popvalue(lua_State *L)
 }
 
 template<>
-inline __int64 popvalue(lua_State *L)
+inline int64_t popvalue(lua_State *L)
 {
-	Integer64 *ret = (Integer64*)lua_touserdata(L,-1);
-	return ret->GetValue();
+	if(lua_isuserdata(L,-1))
+	{
+		const void *r = lua_touserdata(L,-1);
+		if(((Integer64*)r)->GetFlag() == 0XFEDC1234)
+		{
+			Integer64 *ret = (Integer64*)lua_touserdata(L,-1);
+			lua_pop(L,1);
+			return ret->GetValue();
+		}
+		return 0;
+	}
+	else
+	{
+		int64_t ret = (int64_t)lua_tonumber(L,-1);
+		lua_pop(L,1);
+		return ret;
+	}
 }
 
 
@@ -113,18 +128,11 @@ inline luatable popvalue(lua_State *L)
 			lua_pop(L,1);
 		}		
 		else if(lua_isnumber(L,-1))
-		{
-			ret.push_back(popvalue<int>(L));
-		}
+			ret.push_back(popvalue<int64_t>(L));
 		else if(lua_isstring(L,-1))
-		{
 			ret.push_back(popvalue<std::string>(L));
-		}
-
 		else if(lua_isboolean(L,-1))
-		{
 			ret.push_back(popvalue<bool>(L));
-		}
 		else if(lua_istable(L,-1))
 		{
 			//获取元表，如果没有原表就是简单的table，否则是object
@@ -139,9 +147,7 @@ inline luatable popvalue(lua_State *L)
 			}
 		}
 		else
-		{
 			throw std::string("lua函数返回了不支持的类型");
-		}
 	}
 
 	lua_pop(L,1);

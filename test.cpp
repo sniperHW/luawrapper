@@ -63,7 +63,7 @@ int main()
 	register_function(L,"show",showmsg);
 	
 	//≤‚ ‘œÚlua◊¢≤·C++¿‡
-	register_class<testb,void>(L,"testb");
+	register_class<testb>(L,"testb");
 	register_property("valb",&testb::valb);
 	register_member_function("func",&testb::function);
 
@@ -74,9 +74,32 @@ int main()
 	tc.valb = 100;
 	testb tb;
 	tb.valb = 1000;
-	call_luaFunction1<void>("test1",L,&tc);
+	call_luaFunction<void>("test1",L,&tc,(int64_t)1000000000000000000);
 	printf("%d\n",tc.valb);
-	printf("haha\n");
+	
+	luatable ret = call_luaFunction<luatable>("test2",L);
+	int i=0;
+	printf("{");
+	for(;i<ret.size();++i)
+	{
+		printf("%d,",(int)any_cast<int64_t>(ret[i]));
+	}
+	printf("}\n");
+	
+	lua_results<5> ret1 = call_luaFunction<lua_results<5>>("test4",L);
+	printf("{");
+	for(i=0;i<ret1._rets.size();++i)
+	{
+		printf("%d,",(int)any_cast<int64_t>(ret1._rets[i]));
+	}
+	printf("}\n");	
+	
+	luaObject ac = call_luaFunction<luaObject>("test3",L);
+	ac.CallMemberFunction<void>("show");
+	printf("balance:%d\n",ac.GetMemberValue<int>("balance"));
+	ac.SetMemberValue<int>("balance",1000);
+	printf("balance:%d\n",ac.GetMemberValue<int>("balance"));
+	
 	getchar();
 	return 0;
 }
