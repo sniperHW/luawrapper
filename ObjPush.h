@@ -23,54 +23,50 @@ class objPush
 public:
 	objPush(lua_State *L,const T arg)
 	{
-		doPush(L,arg,Int2Type<pointerTraits<T>::isPointer>(),Int2Type<IndexOf<internalType,typename pointerTraits<T>::PointeeType>::value == -1>());
+		lua_pushnumber(L,(lua_Number)arg);
 	}
-private:
-	 //处理指向对象的指针
-	 void doPush(lua_State *L,T arg,Int2Type<true>,Int2Type<true>)
-	 {
+};
+
+//对指针类型的特化
+template<typename T>
+class objPush<T*>
+{
+public:
+	objPush(lua_State *L,T* arg)
+	{
 		if(!arg)
 			lua_pushnil(L);
 		else
 		{
 			if(!luaRegisterClass<typename pointerTraits<T>::PointeeType>::isRegister())
-				lua_pushlightuserdata(L,(void*)arg);
+				lua_pushlightuserdata(L,(T*)arg);
 			else
 				objUserData<typename pointerTraits<T>::PointeeType>::NewObj(L,arg);
 		}
 	}
-
-	//处理指向内部类型的指针
-	void doPush(lua_State *L,T arg,Int2Type<true>,Int2Type<false>)
-	{
-		if(!arg)
-			lua_pushnil(L);
-		{
-			typedef LOKI_TYPELIST_2(char,unsigned char) CharType;
-			//指向内部类型的指中有可能是char *
-			doPushUserData(L,arg,Int2Type<IndexOf<CharType,typename pointerTraits<T>::PointeeType>::value != -1>());
-		}
-	}
-
-	//处理指向内部类型
-	void doPush(lua_State *L,T arg,Int2Type<false>,Int2Type<false>)
-	{
-		lua_pushnumber(L,(lua_Number)arg);
-	}
-	
-	//用于处理指向char *的指针
-	void doPushUserData(lua_State *L,T arg, Int2Type<true>)
-	{
-		lua_pushstring(L,arg);
-	}
-
-	//处理其它指向内部类型的指针
-	void doPushUserData(lua_State *L,T arg, Int2Type<false>)
-	{
-		lua_pushlightuserdata(L,(void*)arg);
-	}
-
 };
+
+//字符串的特化
+template<>
+class objPush<const char *>
+{
+public:
+	objPush(lua_State *L,const char *value)
+	{
+		lua_pushstring(L,value);
+	}
+};
+
+template<>
+class objPush<char*>
+{
+public:
+	objPush(lua_State *L,char *value)
+	{
+		lua_pushstring(L,value);
+	}
+};
+
 
 //对int64的特化成
 template<>
@@ -116,7 +112,6 @@ public:
 		lua_newtable(L);
 		for(int i = 0; i < (int)arg.size(); ++i)
 		{	
-			int v = any_cast<int>(arg[i]);
 			if(arg[0].empty())
 				lua_pushnil(L);
 			else
@@ -175,6 +170,26 @@ public:
 	void push(lua_State *L,any *_any)
 	{
 		lua_pushstring(L,any_cast<std::string>(*_any).c_str());
+	}
+};
+
+template<>
+class concrete_any_pusher<const char *> : public any_pusher
+{
+public:
+	void push(lua_State *L,any *_any)
+	{
+		lua_pushstring(L,any_cast<const char *>(*_any));
+	}
+};
+
+template<>
+class concrete_any_pusher<char *> : public any_pusher
+{
+public:
+	void push(lua_State *L,any *_any)
+	{
+		lua_pushstring(L,any_cast<char *>(*_any));
 	}
 };
 

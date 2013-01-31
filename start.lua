@@ -62,5 +62,9 @@ function test5(lt)
 	print(lt[5])
 end
 
+function test6(str)
+	print(str)
+end
+
 
 

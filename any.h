@@ -94,8 +94,9 @@ public: // structors
 
    template<typename ValueType>
    any(const ValueType & value)
-      : content(new holder<ValueType>(value)),counter(new int(1)),luaRegisterClassName("")
+      : /*content(new holder<ValueType>(value)create_holder<ValueType>),*/counter(new int(1)),luaRegisterClassName("")
    {
+	   content = create_holder<ValueType>(value,Int2Type<IndexOf<SupportType,ValueType>::value <= 9 && IndexOf<SupportType,ValueType>::value >= 0>());
 	   luaRegisterClassName = 	luaRegisterClass<typename pointerTraits<ValueType>::PointeeType>::GetClassName();
 	   _any_pusher = create_any_pusher<ValueType>();
    }
@@ -177,11 +178,24 @@ public:
        public: // structors
 
          holder(const ValueType & value)
-           : held(value){}
+           : held(value)
+		   {}
        public: // representation
 			 ValueType held;
-
       };
+	  
+	  template<typename ValueType>
+	  placeholder * create_holder(ValueType v,Int2Type<true>)
+	  {
+		 return new holder<int64_t>(v);
+	  }
+	  
+	  template<typename ValueType>
+	  placeholder * create_holder(ValueType v,Int2Type<false>)
+	  {
+		 return new holder<ValueType>(v);
+	  }
+	  
    placeholder * content;
    int         * counter;
 public: // representation (public so any_cast can be non-friend)
@@ -191,9 +205,23 @@ public: // representation (public so any_cast can be non-friend)
 };
 
 template<typename ValueType>
-inline ValueType any_cast(const any & operand)
+inline ValueType _any_cast(const any &operand,Int2Type<true>)
+{
+	ValueType ret = static_cast<any::holder<int64_t> *>(operand.content)->held;
+	return ret;
+}
+
+template<typename ValueType>
+inline ValueType _any_cast(const any &operand,Int2Type<false>)
 {
 	return static_cast<any::holder<ValueType> *>(operand.content)->held;
+}
+
+template<typename ValueType>
+inline ValueType any_cast(const any & operand)
+{
+	int v = IndexOf<SupportType,ValueType>::value;
+	return _any_cast<ValueType>(operand,Int2Type<IndexOf<SupportType,ValueType>::value <= 9 && IndexOf<SupportType,ValueType>::value >= 0>());
 }
 
 template<>

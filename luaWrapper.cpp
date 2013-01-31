@@ -161,7 +161,7 @@ void _GetRetFromStack(std::list<any> &out,lua_State *L)
 		lua_pop(L,-1);
 	}
 	else if(lua_isuserdata(L,-1))
-		out.push_front(popvalue<const void*>(L));	
+		out.push_front(popvalue<void*>(L));	
 	else if(lua_isnumber(L,-1))
 		out.push_front(popvalue<int64_t>(L));	
 	else if(lua_isstring(L,-1))

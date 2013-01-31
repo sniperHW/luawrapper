@@ -82,7 +82,7 @@ int main()
 	printf("{");
 	for(;i<ret.size();++i)
 	{
-		printf("%d,",(int)any_cast<int64_t>(ret[i]));
+		printf("%d,",any_cast<int>(ret[i]));
 	}
 	printf("}\n");
 	
@@ -90,7 +90,7 @@ int main()
 	printf("{");
 	for(i=0;i<ret1._rets.size();++i)
 	{
-		printf("%d,",(int)any_cast<int64_t>(ret1._rets[i]));
+		printf("%d,",any_cast<int>(ret1._rets[i]));
 	}
 	printf("}\n");	
 	
@@ -103,8 +103,17 @@ int main()
 	luatable lt_in;
 	for(int i = 0; i < 5;++i)
 		lt_in.push_back(i);
-	call_luaFunction<void>("test5",L,lt_in);	
+	call_luaFunction<void>("test5",L,lt_in);
 	
+	call_luaFunction<void>("test6",L,"this is string");	
+	
+	lt_in.clear();
+	lt_in.push_back((const char*)"hello1");
+	lt_in.push_back((const char*)"hello2");
+	lt_in.push_back((const char*)"hello3");
+	lt_in.push_back((const char*)"hello4");
+	lt_in.push_back((const char*)"hello5");
+	call_luaFunction<void>("test5",L,lt_in);
 	
 	getchar();
 	return 0;
