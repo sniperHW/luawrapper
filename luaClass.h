@@ -1,6 +1,5 @@
 #ifndef _LUACLASS_H
 #define _LUACLASS_H
-//#include "luaWrapper.h"
 #include "luacommon.h"
 #include "luaObject.h"
 #include "any.h"
@@ -162,20 +161,6 @@ struct memberfield
 
 template<typename T>
 class objUserData;
-/*
-class array_holder
-{
-public:
-	template<typename T>
-	array_holder(T _ptr):ptr(_ptr)
-	{
-		type_index = IndexOf<internalType,typename pointerTraits<T>::PointeeType>::value;
-	}
-	void *ptr;
-	int type_index;
-};
-*/
-///////////////////////////////////////
 
 template<typename T,typename type>
 static void GetPropertyData(T *self,lua_State *L,Int2Type<true>,void*(T::*field))
@@ -224,7 +209,7 @@ static void SetProperty(memberfield<T> &mf,Int2Type<true>)
 {
 	mf.smv = SetPropertyPtr<T,type>;
 }
-////////////////////////////////////
+
 //用于向lua注册一个类
 template<typename T>
 class luaClassWrapper

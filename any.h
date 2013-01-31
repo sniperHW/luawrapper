@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include "TypeList.h"
 #include "Trait.h"
+#include "luacommon.h"
 
 typedef LOKI_TYPELIST_12(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,void,int64_t) internalType;
 
@@ -75,6 +76,15 @@ bool luaRegisterClass<T>::m_isRegister = false;
 template<typename T>
 std::string luaRegisterClass<T>::classname;
 
+class any;
+class any_pusher
+{
+public:
+	virtual void push(lua_State *L,any*) = 0; 
+};
+template <typename T>
+any_pusher *create_any_pusher();
+
 //一个精简版的boost::any
 class any
 {
@@ -86,10 +96,8 @@ public: // structors
    any(const ValueType & value)
       : content(new holder<ValueType>(value)),counter(new int(1)),luaRegisterClassName("")
    {
-	   //printf("create\n");
-	   m_type = IndexOf<SupportType,ValueType>::value;
-	   isPointerType = pointerTraits<ValueType>::isPointer;
 	   luaRegisterClassName = 	luaRegisterClass<typename pointerTraits<ValueType>::PointeeType>::GetClassName();
+	   _any_pusher = create_any_pusher<ValueType>();
    }
 
    any(const any & other)
@@ -99,15 +107,14 @@ public: // structors
 		   content = other.content;
 		   counter = other.counter;
 		   ++(*counter);
-		   m_type = other.m_type;
-		   isPointerType = other.isPointerType;
 		   luaRegisterClassName = other.luaRegisterClassName;
+		   _any_pusher = other._any_pusher;
 	   }
 	   else
 	   {
-		   content = 0;
-		   counter = 0;
-		   m_type = 0;
+		   content = NULL;
+		   counter = NULL;
+		   _any_pusher = NULL;
 	   }
    }
 
@@ -122,33 +129,21 @@ public: // structors
 			{
 				content = rhs.content;
 				counter = rhs.counter;
+				_any_pusher = rhs._any_pusher;
 				++(*counter);
-				m_type = rhs.m_type;
-				isPointerType = rhs.isPointerType;
 			}
 			else
 			{
 				content = 0;
 				counter = 0;
-				m_type = 0;
 			}
 			return *this;
 		}
 	}
-
+	
    ~any()
    {
 		_destroy();
-   }
-
-   short GetType() const
-   {
-	   return m_type;
-   }
-
-   bool IsPointerType() const
-   {
-	   return isPointerType;
    }
 
 private:
@@ -158,28 +153,22 @@ private:
 		{
 			delete counter;
 			delete content;
+			delete _any_pusher;
 			//printf("destroy\n");
 		}
 	}
 
-	short m_type;
-	bool  isPointerType;
-
 public: // queries
-
     bool empty() const
     {
        return !content;
     }
-
 public:
 
     class placeholder
     {
       public: // structors
-
 		virtual ~placeholder(){}
-
      };
 
      template<typename ValueType>
@@ -193,11 +182,10 @@ public:
 			 ValueType held;
 
       };
-
-public: // representation (public so any_cast can be non-friend)
-
    placeholder * content;
    int         * counter;
+public: // representation (public so any_cast can be non-friend)
+   any_pusher     * _any_pusher;
    std::string luaRegisterClassName;//保存的类型在lua中注册的名字
 
 };
@@ -211,23 +199,9 @@ inline ValueType any_cast(const any & operand)
 template<>
 inline std::string any_cast(const any & operand)
 {
-	if(operand.GetType() < 10)
-	{
-		//数值型,尝试转换string
-		char tmp[32];
-		int64_t value = any_cast<int64_t>(operand);
-		snprintf(tmp,32,"%lld",value);
-		return std::string(tmp);
-
-	}
-	if(operand.GetType() == 10)
-	{
-		any::holder<std::string> *tmp = static_cast<any::holder<std::string> *>(operand.content);
-		return tmp->held;
-	}
-	return std::string("");
+	any::holder<std::string> *tmp = static_cast<any::holder<std::string> *>(operand.content);
+	return tmp->held;
 }
-
 
 //存放从lua中返回的一组值,volume表示返回值的数量
 template<int volume>
@@ -255,20 +229,13 @@ public:
 		if(counter)
 			++(*counter);
 	}
-	
-	
-
 private:
 	int * counter;
 	std::vector<any> *rets;
 public:
 	std::vector<any> &_rets;
-
 private:
 	lua_results<volume> & operator=(const lua_results<volume> & rhs);
 };
-
-
-
 
 #endif

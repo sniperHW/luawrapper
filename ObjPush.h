@@ -115,68 +115,12 @@ public:
 	{
 		lua_newtable(L);
 		for(int i = 0; i < (int)arg.size(); ++i)
-		{		
+		{	
+			int v = any_cast<int>(arg[i]);
 			if(arg[0].empty())
 				lua_pushnil(L);
 			else
-			{	
-
-				short t_type = arg[i].GetType();
-				if(t_type == -1)
-				{
-					if(arg[i].IsPointerType())
-					{
-						//是否注册的用户类型
-						if(arg[i].luaRegisterClassName == "")
-							objPush<void*> obj(L,any_cast<void*>(arg[i]));
-						else
-						{
-							NewObj(L,any_cast<void*>(arg[i]),arg[i].luaRegisterClassName.c_str());
-						}
-					}
-					else
-					{
-						//出错
-					}
-				}
-				else if(t_type >=0 && t_type <= 9)
-				{
-					switch(t_type)
-					{
-					case 0:
-					case 1:
-						lua_pushnumber(L,any_cast<unsigned char>(arg[i]));
-						break;
-					case 2:
-					case 3:
-						lua_pushnumber(L,any_cast<unsigned short>(arg[i]));
-						break;
-					case 4:
-					case 5:
-						lua_pushnumber(L,any_cast<unsigned int>(arg[i]));
-						break;
-					case 6:
-					case 7:
-						lua_pushnumber(L,any_cast<unsigned long>(arg[i]));
-						break;
-					case 8:
-						lua_pushnumber(L,any_cast<float>(arg[i]));
-						break;
-					case 9:
-						lua_pushnumber(L,any_cast<double>(arg[i]));
-						break;
-					};
-				}
-				else if(t_type == 10)
-					lua_pushstring(L,any_cast<std::string>(arg[i]).c_str());
-				else if(t_type == 11)
-					objPush<luaObject> obj(L,any_cast<luaObject>(arg[i]));
-				else if(t_type == 12)
-					objPush<luatable> obj(L,any_cast<luatable>(arg[i]));
-				else if(t_type == 13)
-					objPush<int64_t> obj(L,any_cast<int64_t>(arg[i]));
-			}
-
+				arg[i]._any_pusher->push(L,const_cast<any*>(&arg[i]));
 			lua_rawseti(L,-2,i+1);
 		}
 	}
@@ -186,6 +130,88 @@ template<typename T>
 void push_obj(lua_State *L,const T obj)
 {
 	objPush<T> _obj(L,obj);
+}
+
+template<typename T>
+class concrete_any_pusher : public any_pusher
+{
+public:
+	void push(lua_State *L,any *_any)
+	{
+		lua_pushnumber(L,any_cast<T>(*_any));
+	}
+};
+
+template<typename T>
+class concrete_any_pusher<T*> : public any_pusher
+{
+public:
+	void push(lua_State *L,any *_any)
+	{
+		//是否注册的用户类型
+		if(_any->luaRegisterClassName == "")
+			objPush<void*> obj(L,any_cast<void*>(*_any));
+		else
+		{
+			NewObj(L,any_cast<void*>(*_any),_any->luaRegisterClassName.c_str());
+		}
+	}
+};
+
+template<>
+class concrete_any_pusher<bool> : public any_pusher
+{
+public:
+	void push(lua_State *L,any *_any)
+	{
+		lua_pushboolean(L,any_cast<bool>(*_any));
+	}
+};
+
+template<>
+class concrete_any_pusher<std::string> : public any_pusher
+{
+public:
+	void push(lua_State *L,any *_any)
+	{
+		lua_pushstring(L,any_cast<std::string>(*_any).c_str());
+	}
+};
+
+template<>
+class concrete_any_pusher<luaObject> : public any_pusher
+{
+public:
+	void push(lua_State *L,any *_any)
+	{
+		objPush<luaObject> obj(L,any_cast<luaObject>(*_any));
+	}
+};
+
+template<>
+class concrete_any_pusher<luatable> : public any_pusher
+{
+public:
+	void push(lua_State *L,any *_any)
+	{
+		objPush<luatable> obj(L,any_cast<luatable>(*_any));
+	}
+};
+
+template<>
+class concrete_any_pusher<int64_t> : public any_pusher
+{
+public:
+	void push(lua_State *L,any *_any)
+	{
+		objPush<int64_t> obj(L,any_cast<int64_t>(*_any));
+	}
+};
+
+template <typename T>
+any_pusher *create_any_pusher()
+{
+	return new concrete_any_pusher<T>;
 }
 
 
