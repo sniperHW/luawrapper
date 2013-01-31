@@ -35,6 +35,8 @@ typedef std::vector<any> luatable;
 
 typedef LOKI_TYPELIST_14(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,std::string,luaObject,luatable,int64_t) SupportType;
 
+typedef LOKI_TYPELIST_11(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,int64_t) numberType;
+
 //注册到lua中的用户数据类型信息
 template<typename T>
 class luaRegisterClass
@@ -96,7 +98,7 @@ public: // structors
    any(const ValueType & value)
       : /*content(new holder<ValueType>(value)create_holder<ValueType>),*/counter(new int(1)),luaRegisterClassName("")
    {
-	   content = create_holder<ValueType>(value,Int2Type<IndexOf<SupportType,ValueType>::value <= 9 && IndexOf<SupportType,ValueType>::value >= 0>());
+	   content = create_holder<ValueType>(value,Int2Type<IndexOf<numberType,ValueType>::value >= 0>());
 	   luaRegisterClassName = 	luaRegisterClass<typename pointerTraits<ValueType>::PointeeType>::GetClassName();
 	   _any_pusher = create_any_pusher<ValueType>();
    }
@@ -221,7 +223,7 @@ template<typename ValueType>
 inline ValueType any_cast(const any & operand)
 {
 	int v = IndexOf<SupportType,ValueType>::value;
-	return _any_cast<ValueType>(operand,Int2Type<IndexOf<SupportType,ValueType>::value <= 9 && IndexOf<SupportType,ValueType>::value >= 0>());
+	return _any_cast<ValueType>(operand,Int2Type<IndexOf<numberType,ValueType>::value >= 0>());
 }
 
 template<>
