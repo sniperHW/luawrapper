@@ -20,14 +20,11 @@
 */
 #ifndef _LUAFUNCTION_H
 #define _LUAFUNCTION_H
-//#include "luaWrapper.h"
-//#include "luaClass.h"
 #include "utility.h"
 #include "any.h"
 #include <iostream>
 #include <vector>
-//template<typename T>
-//class objPush;
+
 
 template<typename T>
 void push_obj(lua_State *L,const T obj);
@@ -35,9 +32,6 @@ void push_obj(lua_State *L,const T obj);
 //取出栈顶的值，通知将其出栈
 template<typename T>
 T popvalue(lua_State *L);
-
-//最大支持从lua中返回10个值
-typedef LOKI_TYPELIST_9(lua_results<2>,lua_results<3>,lua_results<4>,lua_results<5>,lua_results<6>,lua_results<7>,lua_results<8>,lua_results<9>,lua_results<10>) retarrayType;
 
 void _GetRetFromStack(std::list<any> &out,lua_State *L);
 template<typename Ret>
@@ -67,16 +61,16 @@ private:
 	//有返回值
 	static Ret call(lua_State *L,int nArgs,int errFunc,Int2Type<false>,bool callByObject)
 	{
-		Ret ret = _call(L,nArgs,IndexOf<retarrayType,Ret>::value+2,errFunc,Int2Type<IndexOf<retarrayType,Ret>::value == -1>(),callByObject);
+		Ret ret = _call(L,nArgs,errFunc,callByObject);
 		if(callByObject)
 			lua_pop(L,1);
 		return ret;
 	}
 
 	//只有一个返回值
-	static Ret _call(lua_State *L,int nArgs,int nRets,int errFunc,Int2Type<true>,bool callByObject)
+	static Ret _call(lua_State *L,int nArgs,int errFunc,bool callByObject)
 	{
-		if(lua_pcall(L, nArgs, nRets, errFunc ) != 0)
+		if(lua_pcall(L, nArgs, 1, errFunc ) != 0)
 		{
 			const char *error = lua_tostring(L,-1);
 			printf("%s\n",error);
@@ -87,40 +81,6 @@ private:
 		}
 		return popvalue<Ret>(L);
 	}
-	//多个返回值
-	static Ret _call(lua_State *L,int nArgs,int nRets,int errFunc,Int2Type<false>,bool callByObject)
-	{
-		if(lua_pcall(L, nArgs, nRets, errFunc ) != 0)
-		{
-			const char *error = lua_tostring(L,-1);
-			std::string err(error);
-			lua_pop(L,1);
-			throw err;
-		}
-
-		if(callByObject)
-			if (lua_gettop(L) - 1 != nRets)
-				throw std::string("返回值数量不正确");
-		else
-			if (lua_gettop(L) != nRets)
-				throw std::string("返回值数量不正确");
-
-		Ret rets;
-		std::list<any> tmp;
-		
-		int c = nRets;
-		while(c-- > 0)
-			_GetRetFromStack(tmp,L);
-
-		std::list<any>::iterator it = tmp.begin();
-		std::list<any>::iterator end = tmp.end();
-
-		for( ; it != end; ++it)
-			rets._rets.push_back(*it);
-		return rets;
-		
-	}
-
 };
 
 #ifndef PUSH_FUNCTOR

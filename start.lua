@@ -37,6 +37,10 @@ function test1(tb,i)
 	print(tb.valb)
 	tb.valb = i64:new(10000003) 
 	tb.vald = 1000.2
+	print("data1:" .. tb._st.data1)
+	--print(tb._lt)
+	print(tb._lt[1]);
+	print(tb._lt[2]);
 	print(i)
 end
 

@@ -25,18 +25,14 @@
 #include "Trait.h"
 #include "luacommon.h"
 
-typedef LOKI_TYPELIST_12(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,void,int64_t) internalType;
-
 class luaObject;
 class any;
-
-
 typedef std::vector<any> luatable;
 
-typedef LOKI_TYPELIST_14(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,std::string,luaObject,luatable,int64_t) SupportType;
+//typedef LOKI_TYPELIST_14(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,std::string,luaObject,luatable,int64_t) SupportType;
 
 typedef LOKI_TYPELIST_11(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,int64_t) numberType;
-
+typedef LOKI_TYPELIST_12(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,void,int64_t) internalType;
 //注册到lua中的用户数据类型信息
 template<typename T>
 class luaRegisterClass
@@ -222,7 +218,6 @@ inline ValueType _any_cast(const any &operand,Int2Type<false>)
 template<typename ValueType>
 inline ValueType any_cast(const any & operand)
 {
-	int v = IndexOf<SupportType,ValueType>::value;
 	return _any_cast<ValueType>(operand,Int2Type<IndexOf<numberType,ValueType>::value >= 0>());
 }
 
@@ -232,40 +227,5 @@ inline std::string any_cast(const any & operand)
 	any::holder<std::string> *tmp = static_cast<any::holder<std::string> *>(operand.content);
 	return tmp->held;
 }
-
-//存放从lua中返回的一组值,volume表示返回值的数量
-template<int volume>
-class lua_results
-{
-public:
-
-	lua_results():counter(new int(1)),rets(new std::vector<any>),_rets(*rets){}
-
-	~lua_results()
-	{
-		if(counter)
-		{
-			if(--*counter <= 0)
-			{
-				delete counter;
-				delete rets;
-				//printf("retarray destroy\n");
-			}
-		}
-	}
-
-	lua_results(const lua_results & other):counter(other.counter),rets(other.rets),_rets(*rets)
-	{
-		if(counter)
-			++(*counter);
-	}
-private:
-	int * counter;
-	std::vector<any> *rets;
-public:
-	std::vector<any> &_rets;
-private:
-	lua_results<volume> & operator=(const lua_results<volume> & rhs);
-};
 
 #endif

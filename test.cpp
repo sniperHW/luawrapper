@@ -40,6 +40,12 @@ public:
 	double  vald;
 };
 
+struct st
+{
+	int data1;
+	int data2;
+};
+
 class testc : public testb
 {
 public:
@@ -52,7 +58,12 @@ public:
 	{
 		printf("functionc\n");
 	}
+	
+	struct st _st;
+	luatable _lt;
 };
+
+
 
 int main()
 {
@@ -68,13 +79,25 @@ int main()
 	register_property("valb",&testb::valb);
 	register_property("vald",&testb::vald);
 	register_member_function("func",&testb::function);
+	
+	register_class<st>(L,"st");
+	register_property("data1",&st::data1);
+	register_property("data1",&st::data1);	
 
 	register_class<testc,testb>(L,"testc");
+	register_property("_st",&testc::_st);
+	register_property("_lt",&testc::_lt);
 	register_member_function("funcc",&testc::functionc);
+	
 
+	
+	st _st = {10,11};
 	testc tc;
 	tc.valb = 1000000000000000002;
 	tc.vald = 10.0f;
+	tc._st = _st;
+	tc._lt.push_back(15);
+	tc._lt.push_back(16);
 	testb tb;
 	tb.valb = 1000;
 	call_luaFunction<void>("test1",L,&tc,(int64_t)1000000000000000001);
@@ -89,15 +112,7 @@ int main()
 		printf("%d,",any_cast<int>(ret[i]));
 	}
 	printf("}\n");
-	
-	lua_results<5> ret1 = call_luaFunction<lua_results<5>>("test4",L);
-	printf("{");
-	for(i=0;i<ret1._rets.size();++i)
-	{
-		printf("%d,",any_cast<int>(ret1._rets[i]));
-	}
-	printf("}\n");	
-	
+		
 	luaObject ac = call_luaFunction<luaObject>("test3",L);
 	ac.CallMemberFunction<void>("show");
 	printf("balance:%d\n",ac.GetMemberValue<int>("balance"));
