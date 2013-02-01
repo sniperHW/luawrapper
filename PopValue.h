@@ -17,13 +17,34 @@
 #ifndef _POPVALUE_H
 #define _POPVALUE_H
 
-//从lua栈中弹出栈顶元素
 template<typename T>
-inline T popvalue(lua_State *L)
+inline T _pop(lua_State *L,Int2Type<true>)
+{
+	typedef typename pointerTraits<T>::PointeeType rType;
+	objUserData<rType> *obj = objUserData<rType>::checkobjuserdata(L,-1);
+	rType *ret;
+	if(obj)
+		ret = obj->ptr;
+	else 
+		ret = (rType*)lua_touserdata(L,-1);
+	lua_pop(L,1);
+	return ret;
+}
+
+template<typename T>
+inline T _pop(lua_State *L,Int2Type<false>)
 {
 	T ret = (T)lua_tonumber(L,-1);
 	lua_pop(L,1);
 	return ret;
+}
+
+
+//从lua栈中弹出栈顶元素
+template<typename T>
+inline T popvalue(lua_State *L)
+{
+	return _pop<T>(L,Int2Type<pointerTraits<T>::isPointer>());
 }
 
 

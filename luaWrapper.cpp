@@ -82,25 +82,6 @@ int newI64(lua_State *L)
 	return 1;
 }
 
-template <typename T>
-T* _GetPointer(lua_State *L,int index)
-{
-	objUserData<T> *obj = objUserData<T>::checkobjuserdata(L,index);
-	if(obj)
-		return obj->ptr;
-	else 
-		return (T*)lua_touserdata(L,index);
-	return NULL;
-}
-
-template<typename T>
-T _GetData(lua_State *L,int index)
-{
-	double ret = lua_tonumber(L,index);
-	return (T)ret;
-}
-
-
 static const struct luaL_Reg i64Lib[] = {
 	{"new",newI64},
 	{NULL,NULL},

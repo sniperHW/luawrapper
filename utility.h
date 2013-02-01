@@ -63,36 +63,4 @@ inline GetRawType<std::string>::type GetRawValue(std::string &in)
 	return in.c_str();
 }
 
-/*
-template<typename T>
-T* _GetPointer(lua_State *L,int index);
-
-template<typename T>
-T _GetData(lua_State *L,int index);
-
-template<typename T>
-class realGet
-{
-public:
-
-	//ispointer
-	static T* Get(lua_State *L,int index,Int2Type<true>)
-	{
-		return GetPointer(L,index);
-	}
-	
-	static T Get(lua_State *L,int index,Int2Type<false>)
-	{
-		return _GetData(L,index);
-	}
-
-private:
-
-	static T* GetPointer(lua_State *L,int index)
-	{
-		return _GetPointer<T>(L,index);
-	}
-};
-*/
-
 #endif
