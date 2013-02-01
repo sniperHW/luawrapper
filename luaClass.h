@@ -174,18 +174,15 @@ static void GetPropertyData(T *self,lua_State *L,Int2Type<false>,void*(T::*field
 	push_obj<type>(L,*(type*)&(self->*field));
 }
 
-template<typename T>
-T _getLuaParam(lua_State *L,int index);
+//template<typename T>
+//T _getLuaParam(lua_State *L,int index);
 
 //设置数值型成员变量值
 template<typename T,typename type>
 static void SetPropertyData(T *self,lua_State *L,void*(T::*field))
 {
 	type new_value;
-	if(IndexOf<numberType,type>::value == 10)
-		new_value = *(type*)(&(self->*field)) = _getLuaParam<int64_t>(L,3);
-	else
-		new_value = *(type*)(&(self->*field)) = lua_tonumber(L,3);
+	new_value = *(type*)(&(self->*field)) = popvalue<type>(L);
 	push_obj<type>(L,new_value);	
 }
 

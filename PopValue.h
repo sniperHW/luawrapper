@@ -21,7 +21,9 @@
 template<typename T>
 inline T popvalue(lua_State *L)
 {
-	return realGet<typename pointerTraits<T>::PointeeType>::Get(L,-1,Int2Type<pointerTraits<T>::isPointer>());
+	T ret = (T)lua_tonumber(L,-1);
+	lua_pop(L,1);
+	return ret;
 }
 
 
@@ -31,22 +33,6 @@ inline luaObject popvalue(lua_State *L)
 	int r = luaL_ref(L,LUA_REGISTRYINDEX);
 	luaObject obj(L,r);
 	return obj;
-}
-
-template<>
-inline double popvalue(lua_State *L)
-{
-	double ret = lua_tonumber(L,-1);
-	lua_pop(L,1);
-	return ret;
-}
-
-template<>
-inline int popvalue(lua_State *L)
-{
-	int ret = (int)lua_tonumber(L,-1);
-	lua_pop(L,1);
-	return ret;
 }
 
 template<>
@@ -62,6 +48,17 @@ template<>
 inline const void *popvalue(lua_State *L)
 {
 	const void *ret;
+	ret = lua_touserdata(L,-1);
+	if(((objUserData<void>*)ret)->m_flag == 0x1234AFEC)
+		ret = ((objUserData<void>*)ret)->ptr;
+	lua_pop(L,1);
+	return ret;
+}
+
+template<>
+inline void *popvalue(lua_State *L)
+{
+	void *ret;
 	ret = lua_touserdata(L,-1);
 	if(((objUserData<void>*)ret)->m_flag == 0x1234AFEC)
 		ret = ((objUserData<void>*)ret)->ptr;

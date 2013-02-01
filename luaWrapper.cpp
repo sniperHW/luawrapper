@@ -93,6 +93,14 @@ T* _GetPointer(lua_State *L,int index)
 	return NULL;
 }
 
+template<typename T>
+T _GetData(lua_State *L,int index)
+{
+	double ret = lua_tonumber(L,index);
+	return (T)ret;
+}
+
+
 static const struct luaL_Reg i64Lib[] = {
 	{"new",newI64},
 	{NULL,NULL},

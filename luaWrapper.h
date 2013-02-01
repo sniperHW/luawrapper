@@ -27,8 +27,8 @@
 #include "luaClass.h"
 #include "ObjPush.h"
 #include "PopValue.h"
-#include "GetLuaParam.h"
-#include "GetParamFromLua.h"
+//#include "GetLuaParam.h"
+//#include "GetParamFromLua.h"
 
 class luaWrapper
 {
