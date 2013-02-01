@@ -36,7 +36,8 @@ public:
 		printf("this is function\n");
 	}
 
-	int valb;
+	int64_t valb;
+	double  vald;
 };
 
 class testc : public testb
@@ -65,17 +66,20 @@ int main()
 	//≤‚ ‘œÚlua◊¢≤·C++¿‡
 	register_class<testb>(L,"testb");
 	register_property("valb",&testb::valb);
+	register_property("vald",&testb::vald);
 	register_member_function("func",&testb::function);
 
 	register_class<testc,testb>(L,"testc");
 	register_member_function("funcc",&testc::functionc);
 
 	testc tc;
-	tc.valb = 100;
+	tc.valb = 1000000000000000002;
+	tc.vald = 10.0f;
 	testb tb;
 	tb.valb = 1000;
-	call_luaFunction<void>("test1",L,&tc,(int64_t)1000000000000000000);
-	printf("%d\n",tc.valb);
+	call_luaFunction<void>("test1",L,&tc,(int64_t)1000000000000000001);
+	printf("%lld\n",tc.valb);
+	printf("%f\n",tc.vald);
 	
 	luatable ret = call_luaFunction<luatable>("test2",L);
 	int i=0;
@@ -99,7 +103,6 @@ int main()
 	printf("balance:%d\n",ac.GetMemberValue<int>("balance"));
 	ac.SetMemberValue<int>("balance",1000);
 	printf("balance:%d\n",ac.GetMemberValue<int>("balance"));
-	
 	luatable lt_in;
 	for(int i = 0; i < 5;++i)
 		lt_in.push_back(i);
@@ -114,7 +117,6 @@ int main()
 	lt_in.push_back((const char*)"hello4");
 	lt_in.push_back((const char*)"hello5");
 	call_luaFunction<void>("test5",L,lt_in);
-	
 	getchar();
 	return 0;
 }

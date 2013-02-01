@@ -31,12 +31,13 @@ function t(tb)
 	tb:func()
 end
 
-function test1(tb,i64)
+function test1(tb,i)
 	t(tb)
 	show("hello world")
 	print(tb.valb)
-	tb.valb = 10
-	print(i64)
+	tb.valb = i64:new(10000003) 
+	tb.vald = 1000.2
+	print(i)
 end
 
 function test2()

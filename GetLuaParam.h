@@ -58,9 +58,9 @@ inline const char *getLuaParam(lua_State *L,int index)
 }
 
 template<>
-inline const void *getLuaParam(lua_State *L,int index)
+inline void *getLuaParam(lua_State *L,int index)
 {
-	const void *ret;
+	void *ret;
 	if(!lua_isuserdata(L,index))
 		ret = lua_touserdata(L,index);
 	else
@@ -70,6 +70,23 @@ inline const void *getLuaParam(lua_State *L,int index)
 		ret = ((objUserData<void>*)ret)->ptr;
 	}
 	return ret;
+}
+
+template<>
+inline int64_t getLuaParam(lua_State *L,int index)
+{
+	if(lua_isuserdata(L,index))
+	{
+		const void *r = lua_touserdata(L,index);
+		if(((Integer64*)r)->GetFlag() == 0XFEDC1234)
+			return ((Integer64*)lua_touserdata(L,index))->GetValue();
+		return 0;
+	}
+	else
+	{
+		int64_t ret = (int64_t)lua_tonumber(L,index);
+		return ret;
+	}
 }
 
 template<>
@@ -123,9 +140,14 @@ inline luatable getLuaParam(lua_State *L,int index)
 		else
 			throw std::string("lua函数提供了不支持的参数类型");
 	}
-
 	//lua_pop(L,1);
 	return ret;
+}
+
+template<typename T>
+T _getLuaParam(lua_State *L,int index)
+{
+	return getLuaParam<T>(L,index);
 }
 
 #endif

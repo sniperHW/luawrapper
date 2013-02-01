@@ -68,12 +68,12 @@ int NewObj(lua_State *L,void *ptr,const char *classname)
 
 int newI64(lua_State *L)
 {
-	Integer64 *tmp = (Integer64*)lua_touserdata(L,1);
+	Integer64 *tmp = (Integer64*)lua_touserdata(L,2);
 	if(tmp)
 		lua_pushlightuserdata(L,tmp);
 	else
 	{
-		long initval = lua_tonumber(L,1);
+		long initval = lua_tonumber(L,2);
 		size_t nbytes = sizeof(Integer64);
 		void *buf = lua_newuserdata(L, nbytes);
 		new(buf)Integer64(initval);
@@ -83,7 +83,7 @@ int newI64(lua_State *L)
 }
 
 template <typename T>
-static T* _GetPointer(lua_State *L,int index)
+T* _GetPointer(lua_State *L,int index)
 {
 	objUserData<T> *obj = objUserData<T>::checkobjuserdata(L,index);
 	if(obj)
@@ -103,7 +103,6 @@ void Integer64::Register2Lua(lua_State *L)
 	luaL_getmetatable(L, "kenny.lualib");
 	lua_pushstring(L,"int64");
 	lua_newtable(L);
-
 	
 	lua_pushstring(L, "__add");
 	lua_pushcfunction(L, i64Add);
@@ -142,9 +141,9 @@ void Integer64::Register2Lua(lua_State *L)
 	lua_rawset(L, -3);
 
 	//just for test
-	//lua_pushstring(L,"__gc");
-	//lua_pushcfunction(L, i64Destroy);
-	//lua_rawset(L, -3);
+	lua_pushstring(L,"__gc");
+	lua_pushcfunction(L, i64Destroy);
+	lua_rawset(L, -3);
 
 	lua_rawset(L,1);
 	lua_pop(L,1);

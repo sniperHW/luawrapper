@@ -79,6 +79,7 @@ private:
 		if(lua_pcall(L, nArgs, nRets, errFunc ) != 0)
 		{
 			const char *error = lua_tostring(L,-1);
+			printf("%s\n",error);
 			std::string err(error);
 			lua_pop(L,1);
 			throw err;

@@ -64,7 +64,7 @@ inline GetRawType<std::string>::type GetRawValue(std::string &in)
 }
 
 template<typename T>
-static T* _GetPointer(lua_State *L,int index);
+T* _GetPointer(lua_State *L,int index);
 
 template<typename T>
 class realGet

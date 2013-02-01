@@ -150,7 +150,7 @@ struct memberfield
 		mbfunc(p.mbfunc),field(p.field) {}
 
     typedef void (*GMV)(T *,lua_State*,void *(T::*));//获得成员变量值
-    typedef void (*SMV)(T *,lua_State*,void*,void *(T::*));//设置成员变量值
+    typedef void (*SMV)(T *,lua_State*,void *(T::*));//设置成员变量值
     typedef int (*MC)(lua_State*);//调用成员函数
     GMV gmv;
     SMV smv;
@@ -171,24 +171,29 @@ static void GetPropertyData(T *self,lua_State *L,Int2Type<true>,void*(T::*field)
 template<typename T,typename type>
 static void GetPropertyData(T *self,lua_State *L,Int2Type<false>,void*(T::*field))
 {
-	push_obj<type>(L,(type)(self->*field));
+	push_obj<type>(L,*(type*)&(self->*field));
 }
+
+template<typename T>
+T _getLuaParam(lua_State *L,int index);
 
 //设置数值型成员变量值
 template<typename T,typename type>
-static void SetPropertyData(T *self,lua_State *L,void *buf,void*(T::*field))
+static void SetPropertyData(T *self,lua_State *L,void*(T::*field))
 {
-	double *tmp = (double*)buf;
-	*(type*)(&(self->*field)) = (type)*tmp;
-	push_obj<type>(L,(type)(self->*field));
+	type new_value;
+	if(IndexOf<numberType,type>::value == 10)
+		new_value = *(type*)(&(self->*field)) = _getLuaParam<int64_t>(L,3);
+	else
+		new_value = *(type*)(&(self->*field)) = lua_tonumber(L,3);
+	push_obj<type>(L,new_value);	
 }
 
 //设置指针型成员变量的值
 template<typename T,typename type>
 static void SetPropertyPtr(T *self,lua_State *L,void *buf,void*(T::*field))
 {
-	*(type*)(&(self->*field)) = (*(type*)buf);
-	push_obj<type>(L,(type)(self->*field));
+	//不允许直接设置指针成员
 }
 
 //获取成员变量的值
@@ -285,27 +290,12 @@ public:
     }
 
     static int NewIndex(lua_State *L)
-    {
-       double valn;
-       void *valu = NULL;
+    { 	
        objUserData<T> *self = checkobjuserdata(L,1);
        const char *name = luaL_checkstring(L, 2);
-       bool isuserdata = false;
-       if(lua_isnumber(L,3))
-            valn = lua_tonumber(L,3);
-       else
-       {
-            valu = lua_touserdata(L,3);
-            isuserdata = true;
-       }
        typename std::map<std::string,memberfield<T> >::iterator it = luaClassWrapper<T>::fields.find(std::string(name));
        if(it != luaClassWrapper<T>::fields.end())
-       {
-            if(isuserdata)
-                it->second.smv(self->ptr,L,&valu,it->second.field);
-            else
-                it->second.smv(self->ptr,L,&valn,it->second.field);
-       }
+			it->second.smv(self->ptr,L,it->second.field);
        return 0;
 
     }
