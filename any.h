@@ -29,7 +29,7 @@ class luaObject;
 class any;
 typedef std::vector<any> luatable;
 
-//typedef LOKI_TYPELIST_14(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,std::string,luaObject,luatable,int64_t) SupportType;
+typedef LOKI_TYPELIST_14(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,std::string,luaObject,luatable,int64_t) SupportType;
 
 typedef LOKI_TYPELIST_11(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,int64_t) numberType;
 typedef LOKI_TYPELIST_12(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,void,int64_t) internalType;

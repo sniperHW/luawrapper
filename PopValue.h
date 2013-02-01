@@ -39,7 +39,6 @@ inline T _pop(lua_State *L,Int2Type<false>)
 	return ret;
 }
 
-
 //从lua栈中弹出栈顶元素
 template<typename T>
 inline T popvalue(lua_State *L)
@@ -65,26 +64,27 @@ inline std::string popvalue(lua_State *L)
 	return ret;
 }
 
-template<>
-inline const void *popvalue(lua_State *L)
+template<typename T>
+inline T pop_void_ptr(lua_State *L)
 {
-	const void *ret;
+	T ret;
 	ret = lua_touserdata(L,-1);
 	if(((objUserData<void>*)ret)->m_flag == 0x1234AFEC)
 		ret = ((objUserData<void>*)ret)->ptr;
 	lua_pop(L,1);
-	return ret;
+	return ret;	
+}
+
+template<>
+inline const void *popvalue(lua_State *L)
+{
+	return pop_void_ptr<const void*>(L);
 }
 
 template<>
 inline void *popvalue(lua_State *L)
 {
-	void *ret;
-	ret = lua_touserdata(L,-1);
-	if(((objUserData<void>*)ret)->m_flag == 0x1234AFEC)
-		ret = ((objUserData<void>*)ret)->ptr;
-	lua_pop(L,1);
-	return ret;
+	return pop_void_ptr<void*>(L);
 }
 
 template<>

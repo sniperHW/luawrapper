@@ -143,11 +143,11 @@ static void pushI64(lua_State *L,int64_t value)
 template <typename T>
 struct memberfield
 {
-    memberfield():gmv(NULL),smv(NULL),mc(NULL),mbfunc(0){}
+    memberfield():gmv(NULL),smv(NULL),mc(NULL),function(NULL){}
 
     template<typename PARENT>
     memberfield(const memberfield<PARENT> &p):gmv((GMV)p.gmv),smv((SMV)p.smv),mc((MC)p.mc),
-		mbfunc(p.mbfunc),field(p.field) {}
+		function(p.function),property(p.property) {}
 
     typedef void (*GMV)(T *,lua_State*,void *(T::*));//获得成员变量值
     typedef void (*SMV)(T *,lua_State*,void *(T::*));//设置成员变量值
@@ -155,70 +155,107 @@ struct memberfield
     GMV gmv;
     SMV smv;
     MC  mc;
-    void (T::*mbfunc)(void);
-	void *(T::*field);
+    void  (T::*function)(void);
+	void *(T::*property);
 };
 
 template<typename T>
 class objUserData;
 
-template<typename T,typename type>
+template<typename T,typename property_type>
 static void GetPropertyData(T *self,lua_State *L,Int2Type<true>,void*(T::*field))
 {
 	//for obj type
-	push_obj<type*>(L,(type*)&(self->*field));
+	push_obj<property_type*>(L,(property_type*)&(self->*field));
 }
 
-template<typename T,typename type>
-static void GetPropertyData(T *self,lua_State *L,Int2Type<false>,void*(T::*field))
+template<typename T,typename property_type>
+static void GetPropertyData(T *self,lua_State *L,Int2Type<false>,void*(T::*property))
 {
-	push_obj<type>(L,*(type*)&(self->*field));
+	push_obj<property_type>(L,*(property_type*)&(self->*property));
 }
 
-template<typename T,typename type>
-static void SetPropertyData(T *self,lua_State *L,Int2Type<true>,void*(T::*field))
-{
-	//for obj type empty set function
-}
-
-template<typename T,typename type>
-static void SetPropertyData(T *self,lua_State *L,Int2Type<false>,void*(T::*field))
-{
-	type new_value;
-	new_value = *(type*)(&(self->*field)) = popvalue<type>(L);
-	push_obj<type>(L,new_value);	
-}
-
-template<typename T,typename type>
-static void _GetProperty(T *self,lua_State *L,void*(T::*field),Int2Type<false>)
+template<typename T,typename property_type>
+static void _GetProperty(T *self,lua_State *L,void*(T::*property),Int2Type<false>)
 {
 	//for other type
-	GetPropertyData<T,type>(self,L,Int2Type<!pointerTraits<type>::isPointer && IndexOf<internalType,typename pointerTraits<type>::PointeeType>::value == -1>(),field);
+	GetPropertyData<T,property_type>(self,L,Int2Type<!pointerTraits<property_type>::isPointer\
+	 && IndexOf<SupportType,typename pointerTraits<property_type>::PointeeType>::value == -1>(),property);
 }
 
-template<typename T,typename type>
-static void _GetProperty(T *self,lua_State *L,void*(T::*field),Int2Type<true>)
+template<typename T,typename property_type>
+static void _GetProperty(T *self,lua_State *L,void*(T::*property),Int2Type<true>)
 {
 	//for luatable
-	luatable *lt_ptr = (luatable*)(&(self->*field));
+	luatable *lt_ptr = (luatable*)(&(self->*property));
 	push_obj<luatable>(L,*lt_ptr);
 }
 
 //获取成员变量的值
-template<typename T,typename type>
-static void GetProperty(T *self,lua_State *L,void*(T::*field) )
+template<typename T,typename property_type>
+static void GetProperty(T *self,lua_State *L,void*(T::*property) )
 {
 	typedef LOKI_TYPELIST_1(luatable) lt;
-	_GetProperty<T,type>(self,L,field,Int2Type<IndexOf<lt,type>::value==0>());
-	   
+	_GetProperty<T,property_type>(self,L,property,Int2Type<IndexOf<lt,property_type>::value==0>());	   
 }
 
-template<typename T,typename type>
-static void SetProperty(T *self,lua_State *L,void*(T::*field) )
+template<typename T,typename property_type>
+static void SetPropertyData(T *self,lua_State *L,Int2Type<true>,void*(T::*property))
+{
+	//empty function for obj type 
+}
+
+template<typename T,typename property_type>
+static void SetPropertyData(T *self,lua_State *L,Int2Type<false>,void*(T::*property))
+{
+	property_type new_value;
+	new_value = *(property_type*)(&(self->*property)) = popvalue<property_type>(L);
+	push_obj<property_type>(L,new_value);	
+}
+
+template<typename CLASS_TYPE,typename property_type>
+struct Seter
+{
+	Seter(CLASS_TYPE *self,lua_State *L,void*(CLASS_TYPE::*property))
+	{
+		SetPropertyData<CLASS_TYPE,property_type>(self,L,Int2Type<IndexOf<SupportType,\
+			typename pointerTraits<property_type>::PointeeType>::value == -1>(),property);
+	}
+};
+
+template<typename CLASS_TYPE,typename property_type>
+struct Seter<CLASS_TYPE,const property_type*>
+{
+	Seter(CLASS_TYPE *self,lua_State *L,void*(CLASS_TYPE::*property)){}
+};
+
+template<typename CLASS_TYPE>
+struct Seter<CLASS_TYPE,const char*>
+{
+	Seter(CLASS_TYPE *self,lua_State *L,void*(CLASS_TYPE::*property)){}
+};
+
+template<typename CLASS_TYPE>
+struct Seter<CLASS_TYPE,char*>
+{
+	Seter(CLASS_TYPE *self,lua_State *L,void*(CLASS_TYPE::*property)){}
+};
+
+template<typename CLASS_TYPE>
+struct Seter<CLASS_TYPE,luatable>
+{
+	Seter(CLASS_TYPE *self,lua_State *L,void*(CLASS_TYPE::*property))
+	{
+		luatable *lt_ptr = (luatable*)(&(self->*property));
+		*lt_ptr = popvalue<luatable>(L);
+	}
+};
+
+template<typename T,typename property_type>
+static void SetProperty(T *self,lua_State *L,void*(T::*property) )
 {   
-	SetPropertyData<T,type>(self,L,Int2Type<!pointerTraits<type>::isPointer && IndexOf<internalType,typename pointerTraits<type>::PointeeType>::value == -1>(),field);
+	Seter<T,property_type> seter(self,L,property);
 }
-
 
 //用于向lua注册一个类
 template<typename T>
@@ -269,7 +306,7 @@ class luaClassWrapper
 template<typename T>
 std::map<std::string,memberfield<T> > luaClassWrapper<T>::fields;
 
-extern int NewObj(lua_State *L,void *ptr,const char *classname);
+extern int NewObj(lua_State *L,const void *ptr,const char *classname);
 
 template<typename T>
 class objUserData
@@ -278,18 +315,14 @@ public:
 
 
     static objUserData<T> *checkobjuserdata (lua_State *L,int index) {
-      /*const char *name = luaRegisterClass<T>::GetClassName();
-      if(strcmp(name,"") == 0)
-            return NULL;
-      
-      void *ud = luaL_checkudata(L, index,name);
-      */
+      if(!luaRegisterClass<T>::isRegister())
+		return NULL;
       void *ud = lua_touserdata(L,index);
       luaL_argcheck(L, ud != NULL, 1, "userdata expected");
       return (objUserData<T> *)ud;
     }
 
-    static int NewObj(lua_State *L,T *ptr) 
+    static int NewObj(lua_State *L,const T *ptr) 
     {
         return ::NewObj(L,ptr,luaRegisterClass<T>::GetClassName());
     }
@@ -300,7 +333,7 @@ public:
        const char *name = luaL_checkstring(L, 2);
        typename std::map<std::string,memberfield<T> >::iterator it = luaClassWrapper<T>::fields.find(std::string(name));
        if(it != luaClassWrapper<T>::fields.end())
-			it->second.smv(self->ptr,L,it->second.field);
+			it->second.smv(self->ptr,L,it->second.property);
        return 0;
 
     }
@@ -312,13 +345,13 @@ public:
         typename std::map<std::string,memberfield<T> >::iterator it = luaClassWrapper<T>::fields.find(std::string(name));
         if(it != luaClassWrapper<T>::fields.end())
         {
-            if(it->second.mbfunc)
+            if(it->second.function)
             {
-                lua_pushlightuserdata(L,&it->second.mbfunc);
+                lua_pushlightuserdata(L,&it->second.function);
                 lua_pushcclosure(L,it->second.mc,1);
             }
             else
-                it->second.gmv(obj->ptr,L,it->second.field);
+                it->second.gmv(obj->ptr,L,it->second.property);
         }
         else
             lua_pushnil(L);
@@ -566,11 +599,11 @@ void register_class(lua_State *L,const char *name)
 
 //注册类的成员变量
 template<typename T,typename property_type>
-void register_property(const char *name,property_type (T::*field))
+void register_property(const char *name,property_type (T::*property))
 {            
     memberfield<T> mf;
     mf.gmv = GetProperty<T,property_type>;
-	mf.field = (void*(T::*))field;
+	mf.property = (void*(T::*))property;
     mf.smv = SetProperty<T,property_type>;
     luaClassWrapper<T>::InsertFields(name,mf);
 }
@@ -581,7 +614,7 @@ void register_member_function(const char *fun_name,FUNTOR _func)
 {
 	typedef typename memberfunbinder<FUNTOR>::CLASS_TYPE T;
     memberfield<T> mf;
-	mf.mbfunc = (void(T::*)())_func;
+	mf.function = (void(T::*)())_func;
     lua_fun fun = memberfunbinder<FUNTOR>::lua_cfunction;	
     mf.mc = fun;
     luaClassWrapper<T>::InsertFields(fun_name,mf);

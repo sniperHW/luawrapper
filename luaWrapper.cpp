@@ -52,11 +52,11 @@ extern "C"
 	}
 };
 
-int NewObj(lua_State *L,void *ptr,const char *classname) 
+int NewObj(lua_State *L,const void *ptr,const char *classname) 
 {
     size_t nbytes = sizeof(objUserData<void>);
     objUserData<void> *obj = (objUserData<void> *)lua_newuserdata(L, nbytes);
-    obj->ptr = ptr;
+    obj->ptr = const_cast<void*>(ptr);
 	obj->m_flag = 0x1234AFEC;
     luaL_getmetatable(L, "kenny.lualib");
     lua_pushstring(L,classname);

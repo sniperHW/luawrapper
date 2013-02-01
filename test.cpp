@@ -59,8 +59,11 @@ public:
 		printf("functionc\n");
 	}
 	
-	struct st _st;
-	luatable _lt;
+	struct st    _st;
+	luatable     _lt;
+	std::string  str;
+	const char * _str;
+	int  * ptr;
 };
 
 
@@ -87,9 +90,13 @@ int main()
 	register_class<testc,testb>(L,"testc");
 	register_property("_st",&testc::_st);
 	register_property("_lt",&testc::_lt);
+	register_property("str",&testc::str);
+	register_property("_str",&testc::_str);
+	register_property("ptr",&testc::ptr);
 	register_member_function("funcc",&testc::functionc);
 	
-
+	int a;
+	int b;
 	
 	st _st = {10,11};
 	testc tc;
@@ -98,11 +105,18 @@ int main()
 	tc._st = _st;
 	tc._lt.push_back(15);
 	tc._lt.push_back(16);
+	tc.str = "hahaha";
+	tc._str = "fuck";
+	tc.ptr = &a;
 	testb tb;
 	tb.valb = 1000;
-	call_luaFunction<void>("test1",L,&tc,(int64_t)1000000000000000001);
+	call_luaFunction<void>("test1",L,&tc,(int64_t)1000000000000000001,&b);
 	printf("%lld\n",tc.valb);
 	printf("%f\n",tc.vald);
+	printf("%s\n",tc.str.c_str());
+	printf("%s\n",tc._str);
+	printf("%d,%d\n",any_cast<int>(tc._lt[0]),any_cast<int>(tc._lt[1]));
+	printf("%d\n",tc.ptr == &b);
 	
 	luatable ret = call_luaFunction<luatable>("test2",L);
 	int i=0;

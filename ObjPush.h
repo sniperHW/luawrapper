@@ -46,6 +46,24 @@ public:
 	}
 };
 
+template<typename T>
+class objPush<const T*>
+{
+public:
+	objPush(lua_State *L,const T* arg)
+	{
+		if(!arg)
+			lua_pushnil(L);
+		else
+		{
+			if(!luaRegisterClass<typename pointerTraits<T>::PointeeType>::isRegister())
+				lua_pushlightuserdata(L,(T*)arg);
+			else
+				objUserData<typename pointerTraits<T>::PointeeType>::NewObj(L,arg);
+		}
+	}
+};
+
 //×Ö·û´®µÄÌØ»¯
 template<>
 class objPush<const char *>

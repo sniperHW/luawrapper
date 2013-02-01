@@ -31,16 +31,21 @@ function t(tb)
 	tb:func()
 end
 
-function test1(tb,i)
+function test1(tb,i,ptr_2_b)
 	t(tb)
 	show("hello world")
 	print(tb.valb)
 	tb.valb = i64:new(10000003) 
 	tb.vald = 1000.2
 	print("data1:" .. tb._st.data1)
-	--print(tb._lt)
-	print(tb._lt[1]);
-	print(tb._lt[2]);
+	print(tb._lt[1])
+	print(tb._lt[2])
+	tb._lt = {3,4}
+	print(tb.str)
+	print(tb._str)
+	tb.str = "shshs"
+	tb._str = "fuck you"
+	tb.ptr = ptr_2_b
 	print(i)
 end
 
@@ -49,7 +54,7 @@ function test2()
 end
 
 function test3()
-	account = Account:new();
+	account = Account:new()
 	account.balance = 100
 	account.name = "sniperHW"
 	return account
