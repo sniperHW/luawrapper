@@ -577,11 +577,12 @@ void register_property(const char *name,property_type (T::*field))
 template<typename FUNTOR>
 void register_member_function(const char *fun_name,FUNTOR _func)//Ret(T::*_func)())
 {
-    memberfield<typename memberfunbinder<FUNTOR>::CLASS_TYPE> mf;
-    memcpy(&mf.mbfunc,&_func,sizeof(_func));
+	typedef typename memberfunbinder<FUNTOR>::CLASS_TYPE T;
+    memberfield<T> mf;
+	mf.mbfunc = (void(T::*)())_func;
     lua_fun fun = memberfunbinder<FUNTOR>::lua_cfunction;	
     mf.mc = fun;
-    luaClassWrapper<typename memberfunbinder<FUNTOR>::CLASS_TYPE>::InsertFields(fun_name,mf);
+    luaClassWrapper<T>::InsertFields(fun_name,mf);
 }
 
 #endif
