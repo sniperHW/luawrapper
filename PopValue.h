@@ -122,7 +122,11 @@ template<>
 inline luatable popvalue(lua_State *L)
 {
 	luatable ret;
-	int len = luaL_len(L, -1);
+#ifdef _LUAJIT_
+	int len = lua_objlen(L, -1);//for lua5.1
+#else	
+	int len = luaL_len(L, -1);//for lua5.2
+#endif
 	for( int i = 1; i <= len; ++i)
 	{
 		lua_rawgeti(L,-1,i);
