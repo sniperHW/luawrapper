@@ -33,7 +33,6 @@ void push_obj(lua_State *L,const T obj);
 template<typename T>
 T popvalue(lua_State *L);
 
-void _GetRetFromStack(std::list<any> &out,lua_State *L);
 template<typename Ret>
 class doLuaCall
 {

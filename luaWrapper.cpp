@@ -140,30 +140,3 @@ void Integer64::Register2Lua(lua_State *L)
 	lua_pop(L,1);
 	
 }
-
-void _GetRetFromStack(std::list<any> &out,lua_State *L)
-{
-	if(lua_isnil(L,-1))
-	{
-		out.push_front(any());
-		lua_pop(L,-1);
-	}
-	else if(lua_isuserdata(L,-1))
-		out.push_front(popvalue<void*>(L));	
-	else if(lua_isnumber(L,-1))
-		out.push_front(popvalue<int64_t>(L));	
-	else if(lua_isstring(L,-1))
-		out.push_front(popvalue<std::string>(L));
-	else if(lua_isboolean(L,-1))
-		out.push_front(popvalue<bool>(L));
-	else if(lua_istable(L,-1))//返回一个表，需要做特殊处理
-		out.push_front(popvalue<luatable>(L));
-	else
-		throw std::string("lua函数返回了不支持的类型");
-}
-
-
-
-
-
-
