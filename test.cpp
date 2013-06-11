@@ -67,7 +67,6 @@ public:
 };
 
 
-
 int main()
 {
 	luaWrapper lw;
@@ -76,6 +75,9 @@ int main()
 	lua_State *L = *(&lw);
 	//测试注册任意C++函数
 	register_function(L,"show",showmsg);
+	register_function(L,"getlt",getlt);
+	
+
 	
 	//测试向lua注册C++类
 	register_class<testb>(L,"testb");

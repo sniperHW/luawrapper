@@ -127,14 +127,18 @@ class objPush<luatable>
 public:
 	objPush(lua_State *L,const luatable &arg)
 	{
-		lua_newtable(L);
-		for(int i = 0; i < (int)arg.size(); ++i)
-		{	
-			if(arg[0].empty())
-				lua_pushnil(L);
-			else
-				arg[i]._any_pusher->push(L,const_cast<any*>(&arg[i]));
-			lua_rawseti(L,-2,i+1);
+		if(arg.empty())
+			lua_pushnil(L);
+		else{
+			lua_newtable(L);
+			for(int i = 0; i < (int)arg.size(); ++i)
+			{	
+				if(arg[i].empty())
+					lua_pushnil(L);
+				else
+					arg[i]._any_pusher->push(L,const_cast<any*>(&arg[i]));
+				lua_rawseti(L,-2,i+1);
+			}
 		}
 	}
 };

@@ -31,6 +31,7 @@ function t(tb)
 	tb:func()
 end
 
+
 function test1(tb,i,ptr_2_b)
 	t(tb)
 	show("hello world")
