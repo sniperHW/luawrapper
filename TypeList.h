@@ -77,6 +77,10 @@ struct IndexOf<Typelist<Head, Tail>, T>
 #define LOKI_TYPELIST_14(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12,T13,T14) \
     Typelist<T1, LOKI_TYPELIST_13(T2, T3, T4, T5, T6, T7, T8, T9, T10, \
         T11, T12, T13,T14) >
+		
+#define LOKI_TYPELIST_15(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12,T13,T14,T15) \
+    Typelist<T1, LOKI_TYPELIST_14(T2, T3, T4, T5, T6, T7, T8, T9, T10, \
+        T11, T12, T13,T14,T15) >		
 
 template<int v>
 struct Int2Type

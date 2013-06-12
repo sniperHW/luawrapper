@@ -13,6 +13,13 @@ static int showmsg(const char *msg)
 	return 0;
 }
 
+static bool isHello(const char *str)
+{
+	if(strcmp(str,"hello") == 0)
+		return true;
+	return false;
+}
+
 class testa
 {
 public:
@@ -38,6 +45,7 @@ public:
 
 	int64_t valb;
 	double  vald;
+	bool    mb;
 };
 
 struct st
@@ -75,7 +83,7 @@ int main()
 	lua_State *L = *(&lw);
 	//≤‚ ‘◊¢≤·»Œ“‚C++∫Ø ˝
 	register_function(L,"show",showmsg);
-	register_function(L,"getlt",getlt);
+	register_function(L,"ishello",isHello);
 	
 
 	
@@ -83,6 +91,7 @@ int main()
 	register_class<testb>(L,"testb");
 	register_property("valb",&testb::valb);
 	register_property("vald",&testb::vald);
+	register_property("mb",&testb::mb);
 	register_member_function("func",&testb::function);
 	
 	register_class<st>(L,"st");
@@ -97,57 +106,67 @@ int main()
 	register_property("ptr",&testc::ptr);
 	register_member_function("funcc",&testc::functionc);
 	
-	int a;
-	int b;
-	
-	st _st = {10,11};
-	testc tc;
-	tc.valb = 1000000000000000002;
-	tc.vald = 10.0f;
-	tc._st = _st;
-	tc._lt.push_back(15);
-	tc._lt.push_back(16);
-	tc.str = "hahaha";
-	tc._str = "fuck";
-	tc.ptr = &a;
-	testb tb;
-	tb.valb = 1000;
-	call_luaFunction<void>("test1",L,&tc,(int64_t)1000000000000000001,&b);
-	printf("%lld\n",tc.valb);
-	printf("%f\n",tc.vald);
-	printf("%s\n",tc.str.c_str());
-	printf("%s\n",tc._str);
-	printf("%d,%d\n",any_cast<int>(tc._lt[0]),any_cast<int>(tc._lt[1]));
-	printf("%d\n",tc.ptr == &b);
-	
-	luatable ret = call_luaFunction<luatable>("test2",L);
-	int i=0;
-	printf("{");
-	for(;i<ret.size();++i)
-	{
-		printf("%d,",any_cast<int>(ret[i]));
-	}
-	printf("}\n");
+	try{
+		int a;
+		int b;
 		
-	luaObject ac = call_luaFunction<luaObject>("test3",L);
-	ac.CallMemberFunction<void>("show");
-	printf("balance:%d\n",ac.GetMemberValue<int>("balance"));
-	ac.SetMemberValue<int>("balance",1000);
-	printf("balance:%d\n",ac.GetMemberValue<int>("balance"));
-	luatable lt_in;
-	for(int i = 0; i < 5;++i)
-		lt_in.push_back(i);
-	call_luaFunction<void>("test5",L,lt_in);
-	
-	call_luaFunction<void>("test6",L,"this is string");	
-	
-	lt_in.clear();
-	lt_in.push_back((const char*)"hello1");
-	lt_in.push_back((const char*)"hello2");
-	lt_in.push_back((const char*)"hello3");
-	lt_in.push_back((const char*)"hello4");
-	lt_in.push_back((const char*)"hello5");
-	call_luaFunction<void>("test5",L,lt_in);
+		st _st = {10,11};
+		testc tc;
+		tc.valb = 1000000000000000002;
+		tc.vald = 10.0f;
+		tc.mb = true;
+		tc._st = _st;
+		tc._lt.push_back(15);
+		tc._lt.push_back(16);
+		tc.str = "hahaha";
+		tc._str = "fuck";
+		tc.ptr = &a;
+		call_luaFunction<void>("test1",L,&tc,(int64_t)1000000000000000001,&b);
+		printf("%lld\n",tc.valb);
+		printf("%f\n",tc.vald);
+		printf("%s\n",tc.str.c_str());
+		printf("%s\n",tc._str);
+		printf("%d,%d\n",any_cast<int>(tc._lt[0]),any_cast<int>(tc._lt[1]));
+		printf("%d\n",tc.ptr == &b);
+		if(tc.mb)
+			printf("now tc.mb is true\n");
+		else
+			printf("no tc.mb is false\n");
+		
+		luatable ret = call_luaFunction<luatable>("test2",L);
+		int i=0;
+		printf("{");
+		for(;i<ret.size();++i)
+		{
+			printf("%d,",any_cast<int>(ret[i]));
+		}
+		printf("}\n");
+			
+		luaObject ac = call_luaFunction<luaObject>("test3",L);
+		ac.CallMemberFunction<void>("show");
+		printf("balance:%d\n",ac.GetMemberValue<int>("balance"));
+		ac.SetMemberValue<int>("balance",1000);
+		printf("balance:%d\n",ac.GetMemberValue<int>("balance"));
+		luatable lt_in;
+		for(int i = 0; i < 5;++i)
+			lt_in.push_back(i);
+		call_luaFunction<void>("test5",L,lt_in);
+		
+		call_luaFunction<void>("test6",L,"this is string");	
+		
+		lt_in.clear();
+		lt_in.push_back((const char*)"hello1");
+		lt_in.push_back((const char*)"hello2");
+		lt_in.push_back((const char*)"hello3");
+		lt_in.push_back((const char*)"hello4");
+		lt_in.push_back((const char*)"hello5");
+		call_luaFunction<void>("test5",L,lt_in);
+		
+		call_luaFunction<void>("test7",L);
+	}catch(std::string err)
+	{
+		printf("%s\n",err.c_str());
+	}
 	getchar();
 	return 0;
 }

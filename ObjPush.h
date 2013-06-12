@@ -113,12 +113,21 @@ template<>
 class objPush<luaObject>
 {
 public:
-	objPush(lua_State *L,const luaObject arg)
+	objPush(lua_State *L,const luaObject &arg)
 	{
 		lua_rawgeti(L,LUA_REGISTRYINDEX,arg.getIndex());
 	}
 };
 
+template<>
+class objPush<bool>
+{
+public:
+	objPush(lua_State *L,bool arg)
+	{
+		lua_pushboolean(L,arg);
+	}
+};
 
 //针对luatable的特化
 template<>

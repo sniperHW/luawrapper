@@ -38,6 +38,9 @@ function test1(tb,i,ptr_2_b)
 	print(tb.valb)
 	tb.valb = i64:new(10000003) 
 	tb.vald = 1000.2
+	if tb.mb then
+		tb.mb = false
+	end
 	print("data1:" .. tb._st.data1)
 	print(tb._lt[1])
 	print(tb._lt[2])
@@ -75,6 +78,17 @@ end
 
 function test6(str)
 	print(str)
+end
+
+function test7()
+	if ishello("hello") then
+		print("yes is hello")
+	end
+	
+	if not ishello("ihello") then
+		print("no is not a hello")
+	end
+	
 end
 
 
