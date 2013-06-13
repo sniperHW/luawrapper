@@ -1,79 +1,153 @@
 #include "luaWrapper.h"
 #include <stdio.h>
 
-static int userdata(lua_State *L)
-{
-	int *a = (int*)lua_touserdata(L,-1);
-	printf("a = %d\n",*a);
-	return 0;
-}
+//测试直接调用C函数
 static int showmsg(const char *msg)
 {
-	printf("%s\n",msg);
+	printf("c-showmsg:%s\n",msg);
 	return 0;
 }
 
-static bool isHello(const char *str)
+void test_call_c_function(lua_State *L)
 {
-	if(strcmp(str,"hello") == 0)
-		return true;
-	return false;
+	printf("-------测试调用C函数---------\n");
+	register_function(L,"cshow",showmsg);
+	try{
+		call_luaFunction<void>("test1",L);
+	}catch(std::string &err)
+	{
+		printf("%s\n",err.c_str());
+	}
 }
 
-class testa
+class test_class_A
 {
-public:
-	int vala;
-	int valb[10];
+	public:
+		int  memb_a;
+		void show()
+		{
+			printf("test_class_A::show\n");
+		}
 };
 
-class testd
+void test_class1(lua_State *L)
 {
-public:
-	virtual void testdf(){}
-	int vald;
-};
-
-class testb : virtual public testa,virtual public testd
-{
-public:
-	
-	virtual void function()
+	printf("\n-----测试向lua传递c++对象1-----\n");
+	register_class<test_class_A>(L,"test_class_A");
+	register_property("memb_a",&test_class_A::memb_a);
+	register_member_function("show",&test_class_A::show);
+	test_class_A a;
+	a.memb_a = 100;
+	try{
+		call_luaFunction<void>("test2",L,&a);
+	}catch(std::string &err)
 	{
-		printf("this is function\n");
+		printf("%s\n",err.c_str());
 	}
+	printf("调用完test2之后,a.memb_a:%d\n",a.memb_a);
+}
 
-	int64_t valb;
-	double  vald;
-	bool    mb;
-};
-
-struct st
+void test_pass_luatable(lua_State *L)
 {
-	int data1;
-	int data2;
+	printf("\n-----测试向lua传递luatable-----\n");
+	try{
+		luatable lt;
+		for(int i = 0; i < 10; ++i)
+			lt.push_back(i);
+		call_luaFunction<void>("test3",L,lt);
+	}catch(std::string &err)
+	{
+		printf("%s\n",err.c_str());
+	}
+}
+
+luatable c_return_luatable()
+{
+	luatable lt;
+	for(int i = 0; i < 10; ++i)
+		lt.push_back(i);
+	return lt;
+}
+
+void test_c_return_luatable(lua_State *L)
+{
+	printf("\n-----测试向lua返回luatable-----\n");
+	register_function(L,"c_return_luatable",c_return_luatable);
+	try{
+		call_luaFunction<void>("test4",L);
+	}catch(std::string &err)
+	{
+		printf("%s\n",err.c_str());
+	}
+}
+
+void test_lua_return_luatable(lua_State *L)
+{
+	printf("\n-----测试从lua返回luatable-----\n");
+	try{
+		luatable lt = call_luaFunction<luatable>("test5",L);
+		for(int i = 0 ;i < lt.size(); ++i)
+			printf("%d\n",any_cast<int>(lt[i]));
+	}catch(std::string &err)
+	{
+		printf("%s\n",err.c_str());
+	}	
+}
+
+void test_op_lua_obj(lua_State *L)
+{
+	printf("\n-----测试操作lua对象-----\n");
+	try{
+		luaObject lo = call_luaFunction<luaObject>("test6",L);
+		lo.CallMemberFunction<void>("show");
+		printf("balance:%d\n",lo.GetMemberValue<int>("balance"));
+		lo.SetMemberValue<int>("balance",1000);
+		printf("balance:%d\n",lo.GetMemberValue<int>("balance"));		
+	}catch(std::string &err)
+	{
+		printf("%s\n",err.c_str());
+	}
+}
+
+class base
+{
+	public:
+		virtual void show()
+		{
+			printf("this base show\n");
+		}
+		
+		void show2()
+		{
+			printf("this is not virtual function\n");
+		}
 };
 
-class testc : public testb
+class child:public base
 {
 public:
-	void function()
+	void show()
 	{
-		printf("this is testc\n");
+		printf("this child show\n");
 	}
-
-	void functionc()
-	{
-		printf("functionc\n");
-	}
-	
-	struct st    _st;
-	luatable     _lt;
-	std::string  str;
-	const char * _str;
-	int  * ptr;
 };
 
+void test_call_virtual_function(lua_State *L)
+{
+	printf("\n-----测试lua调用c++对象虚函数-----\n");
+	register_class<base>(L,"base");
+	register_member_function("show",&base::show);
+	register_member_function("show2",&base::show2);
+	register_class<child,base>(L,"child");
+	child c;
+	base *b = &c;
+	try{
+		call_luaFunction<void>("test7",L,b,&c);	
+	}catch(std::string &err)
+	{
+		printf("%s\n",err.c_str());
+	}	
+}
 
 int main()
 {
@@ -81,92 +155,13 @@ int main()
 	lw.init();
 	lw.load("start.lua");
 	lua_State *L = *(&lw);
-	//测试注册任意C++函数
-	register_function(L,"show",showmsg);
-	register_function(L,"ishello",isHello);
-	
-
-	
-	//测试向lua注册C++类
-	register_class<testb>(L,"testb");
-	register_property("valb",&testb::valb);
-	register_property("vald",&testb::vald);
-	register_property("mb",&testb::mb);
-	register_member_function("func",&testb::function);
-	
-	register_class<st>(L,"st");
-	register_property("data1",&st::data1);
-	register_property("data1",&st::data1);	
-
-	register_class<testc,testb>(L,"testc");
-	register_property("_st",&testc::_st);
-	register_property("_lt",&testc::_lt);
-	register_property("str",&testc::str);
-	register_property("_str",&testc::_str);
-	register_property("ptr",&testc::ptr);
-	register_member_function("funcc",&testc::functionc);
-	
-	try{
-		int a;
-		int b;
-		
-		st _st = {10,11};
-		testc tc;
-		tc.valb = 1000000000000000002;
-		tc.vald = 10.0f;
-		tc.mb = true;
-		tc._st = _st;
-		tc._lt.push_back(15);
-		tc._lt.push_back(16);
-		tc.str = "hahaha";
-		tc._str = "fuck";
-		tc.ptr = &a;
-		call_luaFunction<void>("test1",L,&tc,(int64_t)1000000000000000001,&b);
-		printf("%lld\n",tc.valb);
-		printf("%f\n",tc.vald);
-		printf("%s\n",tc.str.c_str());
-		printf("%s\n",tc._str);
-		printf("%d,%d\n",any_cast<int>(tc._lt[0]),any_cast<int>(tc._lt[1]));
-		printf("%d\n",tc.ptr == &b);
-		if(tc.mb)
-			printf("now tc.mb is true\n");
-		else
-			printf("no tc.mb is false\n");
-		
-		luatable ret = call_luaFunction<luatable>("test2",L);
-		int i=0;
-		printf("{");
-		for(;i<ret.size();++i)
-		{
-			printf("%d,",any_cast<int>(ret[i]));
-		}
-		printf("}\n");
-			
-		luaObject ac = call_luaFunction<luaObject>("test3",L);
-		ac.CallMemberFunction<void>("show");
-		printf("balance:%d\n",ac.GetMemberValue<int>("balance"));
-		ac.SetMemberValue<int>("balance",1000);
-		printf("balance:%d\n",ac.GetMemberValue<int>("balance"));
-		luatable lt_in;
-		for(int i = 0; i < 5;++i)
-			lt_in.push_back(i);
-		call_luaFunction<void>("test5",L,lt_in);
-		
-		call_luaFunction<void>("test6",L,"this is string");	
-		
-		lt_in.clear();
-		lt_in.push_back((const char*)"hello1");
-		lt_in.push_back((const char*)"hello2");
-		lt_in.push_back((const char*)"hello3");
-		lt_in.push_back((const char*)"hello4");
-		lt_in.push_back((const char*)"hello5");
-		call_luaFunction<void>("test5",L,lt_in);
-		
-		call_luaFunction<void>("test7",L);
-	}catch(std::string err)
-	{
-		printf("%s\n",err.c_str());
-	}
+	test_call_c_function(L);
+	test_class1(L);
+	test_pass_luatable(L);
+	test_c_return_luatable(L);
+	test_lua_return_luatable(L);
+	test_op_lua_obj(L);
+	test_call_virtual_function(L);
 	getchar();
 	return 0;
 }

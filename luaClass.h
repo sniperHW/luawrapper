@@ -241,13 +241,16 @@ struct Seter<CLASS_TYPE,char*>
 	Seter(CLASS_TYPE *self,lua_State *L,void*(CLASS_TYPE::*property)){}
 };
 
+
+void get_luatable(luatable &,lua_State *L);
+
 template<typename CLASS_TYPE>
 struct Seter<CLASS_TYPE,luatable>
 {
 	Seter(CLASS_TYPE *self,lua_State *L,void*(CLASS_TYPE::*property))
 	{
 		luatable *lt_ptr = (luatable*)(&(self->*property));
-		*lt_ptr = popvalue<luatable>(L);
+		get_luatable(*lt_ptr,L);
 	}
 };
 

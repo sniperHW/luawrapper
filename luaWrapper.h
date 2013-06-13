@@ -25,8 +25,9 @@
 #include <list>
 #include "luaObject.h"
 #include "luaClass.h"
-#include "ObjPush.h"
 #include "PopValue.h"
+#include "ObjPush.h"
+
 
 class luaWrapper
 {

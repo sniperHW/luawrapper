@@ -27,69 +27,43 @@ function Account:setBalance(val)
 	self.balance = val
 end
 
-function t(tb)
-	tb:func()
+function test1()
+	cshow("hello")
 end
 
+function test2(obj)
+	print(obj.memb_a)
+	obj.memb_a = 101
+	obj:show()
+end
 
-function test1(tb,i,ptr_2_b)
-	t(tb)
-	show("hello world")
-	print(tb.valb)
-	tb.valb = i64:new(10000003) 
-	tb.vald = 1000.2
-	if tb.mb then
-		tb.mb = false
+function test3(lt)
+	for i = 1,#lt do
+		print(lt[i])
 	end
-	print("data1:" .. tb._st.data1)
-	print(tb._lt[1])
-	print(tb._lt[2])
-	tb._lt = {3,4}
-	print(tb.str)
-	print(tb._str)
-	tb.str = "shshs"
-	tb._str = "fuck you"
-	tb.ptr = ptr_2_b
-	print(i)
 end
 
-function test2()
-	return {1,2,3,4,5}
+function test4()
+	local lt = c_return_luatable()
+	for i = 1,#lt do
+		print(lt[i])
+	end	
 end
 
-function test3()
+function test5()
+	return {1,2,3,4,5,6}
+end
+
+function test6()
 	account = Account:new()
 	account.balance = 100
 	account.name = "sniperHW"
 	return account
 end
 
-function test4()
-	return 1,2,3,4,5
+function test7(b,c)
+	b:show()
+	c:show2()
 end
-
-function test5(lt)
-	print(lt[1])
-	print(lt[2])
-	print(lt[3])
-	print(lt[4])
-	print(lt[5])
-end
-
-function test6(str)
-	print(str)
-end
-
-function test7()
-	if ishello("hello") then
-		print("yes is hello")
-	end
-	
-	if not ishello("ihello") then
-		print("no is not a hello")
-	end
-	
-end
-
 
 

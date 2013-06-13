@@ -112,6 +112,7 @@ public:
 		lua_pushstring(m_plState,name);
 		push_obj<T>(m_plState,value);
 		lua_settable(m_plState,-3);
+		lua_pop(m_plState,1);
 	}
 
 	template<typename Ret>

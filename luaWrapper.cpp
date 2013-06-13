@@ -140,3 +140,8 @@ void Integer64::Register2Lua(lua_State *L)
 	lua_pop(L,1);
 	
 }
+
+void get_luatable(luatable &lt,lua_State *L)
+{
+	lt = popvalue<luatable>(L);
+}
