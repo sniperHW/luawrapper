@@ -66,4 +66,9 @@ function test7(b,c)
 	c:show2()
 end
 
+function test8(a,b)
+	print(a + b * 2)
+	print(a*20 - b * 2)
+end
+
 

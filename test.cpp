@@ -149,6 +149,19 @@ void test_call_virtual_function(lua_State *L)
 	}	
 }
 
+void test_int64(lua_State *L)
+{
+	printf("\n-----测试lua中使用64位整数-----\n");
+	try{
+		int64_t a = 4294967295;
+		int64_t b = 4294967296;
+		call_luaFunction<void>("test8",L,a,b);	
+	}catch(std::string &err)
+	{
+		printf("%s\n",err.c_str());
+	}	
+}
+
 int main()
 {
 	luaWrapper lw;
@@ -162,6 +175,7 @@ int main()
 	test_lua_return_luatable(L);
 	test_op_lua_obj(L);
 	test_call_virtual_function(L);
+	test_int64(L);
 	getchar();
 	return 0;
 }
