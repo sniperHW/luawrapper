@@ -28,6 +28,7 @@
 #include "PopValue.h"
 #include "ObjPush.h"
 
+namespace lWrapper{
 
 class luaWrapper
 {
@@ -51,6 +52,6 @@ public:
 private:
 	lua_State *lState;
 };
-
+}
 
 #endif

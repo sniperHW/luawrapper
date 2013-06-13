@@ -1,6 +1,10 @@
 #include "luaWrapper.h"
 #include <stdio.h>
 
+typedef lWrapper::luatable luatable;
+typedef lWrapper::luaObject luaObject;
+#define any_cast lWrapper::any_cast
+
 //测试直接调用C函数
 static int showmsg(const char *msg)
 {
@@ -11,9 +15,9 @@ static int showmsg(const char *msg)
 void test_call_c_function(lua_State *L)
 {
 	printf("-------测试调用C函数---------\n");
-	register_function(L,"cshow",showmsg);
+	lWrapper::register_function(L,"cshow",showmsg);
 	try{
-		call_luaFunction<void>("test1",L);
+		lWrapper::call<void>("test1",L);
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -33,14 +37,14 @@ class test_class_A
 void test_class1(lua_State *L)
 {
 	printf("\n-----测试向lua传递c++对象1-----\n");
-	register_class<test_class_A>(L,"test_class_A")
+	lWrapper::register_class<test_class_A>(L,"test_class_A")
 		.property("memb_a",&test_class_A::memb_a)
 		.function("show",&test_class_A::show);
 	
 	test_class_A a;
 	a.memb_a = 100;
 	try{
-		call_luaFunction<void>("test2",L,&a);
+		lWrapper::call<void>("test2",L,&a);
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -55,7 +59,7 @@ void test_pass_luatable(lua_State *L)
 		luatable lt;
 		for(int i = 0; i < 10; ++i)
 			lt.push_back(i);
-		call_luaFunction<void>("test3",L,lt);
+		lWrapper::call<void>("test3",L,lt);
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -73,9 +77,9 @@ luatable c_return_luatable()
 void test_c_return_luatable(lua_State *L)
 {
 	printf("\n-----测试向lua返回luatable-----\n");
-	register_function(L,"c_return_luatable",c_return_luatable);
+	lWrapper::register_function(L,"c_return_luatable",c_return_luatable);
 	try{
-		call_luaFunction<void>("test4",L);
+		lWrapper::call<void>("test4",L);
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -86,7 +90,7 @@ void test_lua_return_luatable(lua_State *L)
 {
 	printf("\n-----测试从lua返回luatable-----\n");
 	try{
-		luatable lt = call_luaFunction<luatable>("test5",L);
+		luatable lt = lWrapper::call<luatable>("test5",L);
 		for(int i = 0 ;i < lt.size(); ++i)
 			printf("%d\n",any_cast<int>(lt[i]));
 	}catch(std::string &err)
@@ -99,11 +103,11 @@ void test_op_lua_obj(lua_State *L)
 {
 	printf("\n-----测试操作lua对象-----\n");
 	try{
-		luaObject lo = call_luaFunction<luaObject>("test6",L);
-		lo.CallMemberFunction<void>("show");
-		printf("balance:%d\n",lo.GetMemberValue<int>("balance"));
-		lo.SetMemberValue<int>("balance",1000);
-		printf("balance:%d\n",lo.GetMemberValue<int>("balance"));		
+		luaObject lo = lWrapper::call<luaObject>("test6",L);
+		lo.call<void>("show");
+		printf("balance:%d\n",lo.Get<int>("balance"));
+		lo.Set("balance",1000);
+		printf("balance:%d\n",lo.Get<int>("balance"));		
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -136,14 +140,14 @@ public:
 void test_call_virtual_function(lua_State *L)
 {
 	printf("\n-----测试lua调用c++对象虚函数-----\n");
-	register_class<base>(L,"base")
+	lWrapper::register_class<base>(L,"base")
 		.function("show",&base::show)
 		.function("show2",&base::show2);
-	register_class<child,base>(L,"child");
+	lWrapper::register_class<child,base>(L,"child");
 	child c;
 	base *b = &c;
 	try{
-		call_luaFunction<void>("test7",L,b,&c);	
+		lWrapper::call<void>("test7",L,b,&c);	
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -156,7 +160,7 @@ void test_int64(lua_State *L)
 	try{
 		int64_t a = 4294967295;
 		int64_t b = 4294967296;
-		call_luaFunction<void>("test8",L,a,b);	
+		lWrapper::call<void>("test8",L,a,b);	
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -165,7 +169,7 @@ void test_int64(lua_State *L)
 
 int main()
 {
-	luaWrapper lw;
+	lWrapper::luaWrapper lw;
 	lw.dofile("start.lua");
 	test_call_c_function(lw);
 	test_class1(lw);

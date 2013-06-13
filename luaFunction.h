@@ -25,7 +25,7 @@
 #include <iostream>
 #include <vector>
 
-
+namespace lWrapper{
 template<typename T>
 void push_obj(lua_State *L,const T obj);
 
@@ -295,14 +295,14 @@ void register_function(lua_State *L,const char *name, FUNTOR _func)
 }
 
 template<typename Ret>
-Ret call_luaFunction(const char *funname,lua_State *L)
+Ret call(const char *funname,lua_State *L)
 {
 	lua_getglobal(L,funname);
 	return doLuaCall<Ret>::doCall(L,0,0);
 }
 
 template<typename Ret,typename Arg1>
-Ret call_luaFunction(const char *funname,lua_State *L,Arg1 arg1)
+Ret call(const char *funname,lua_State *L,Arg1 arg1)
 {
 	lua_getglobal(L,funname);
 	push_obj<Arg1>(L,arg1);
@@ -310,7 +310,7 @@ Ret call_luaFunction(const char *funname,lua_State *L,Arg1 arg1)
 }
 
 template<typename Ret,typename Arg1,typename Arg2>
-Ret call_luaFunction(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2)
+Ret call(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2)
 {
 	lua_getglobal(L,funname);
 	push_obj<Arg1>(L,arg1);
@@ -319,7 +319,7 @@ Ret call_luaFunction(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2)
 }
 
 template<typename Ret,typename Arg1,typename Arg2,typename Arg3>
-Ret call_luaFunction(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 arg3)
+Ret call(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 arg3)
 {
 	lua_getglobal(L,funname);
 	push_obj<Arg1>(L,arg1);
@@ -329,7 +329,7 @@ Ret call_luaFunction(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 a
 }
 
 template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename Arg4>
-Ret call_luaFunction(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 arg3,Arg4 arg4)
+Ret call(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 arg3,Arg4 arg4)
 {
 	lua_getglobal(L,funname);
 	push_obj<Arg1>(L,arg1);
@@ -338,5 +338,5 @@ Ret call_luaFunction(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 a
 	push_obj<Arg4>(L,arg4);
 	return doLuaCall<Ret>::doCall(L,4,0);
 }
-
+}
 #endif 

@@ -1,6 +1,6 @@
 #include "luaWrapper.h"
 #include <stdlib.h>
-
+namespace lWrapper{
 bool luaWrapper::dofile(const char *filename)
 {
     if (luaL_dofile(lState, filename)) {
@@ -118,4 +118,5 @@ void Integer64::Register2Lua(lua_State *L)
 void get_luatable(luatable &lt,lua_State *L)
 {
 	lt = popvalue<luatable>(L);
+}
 }

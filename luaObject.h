@@ -25,6 +25,8 @@
 		lua_gettable(L,-2);\
 		lua_rawgeti(L,LUA_REGISTRYINDEX,index);\
 	}
+
+namespace lWrapper{
 	
 template<typename T>
 T popvalue(lua_State *L);	
@@ -94,7 +96,7 @@ public:
 
 	//获得类的成员变量
 	template<typename T>
-	T GetMemberValue(const char *name)
+	T Get(const char *name)
 	{
 		lua_rawgeti(m_plState,LUA_REGISTRYINDEX,m_iKeyIndex);
 		lua_pushstring(m_plState,name);
@@ -106,7 +108,7 @@ public:
 
 	//设置成员变量 
 	template<typename T>
-	void SetMemberValue(const char *name,T value)
+	void Set(const char *name,T value)
 	{
 		lua_rawgeti(m_plState,LUA_REGISTRYINDEX,m_iKeyIndex);
 		lua_pushstring(m_plState,name);
@@ -116,14 +118,14 @@ public:
 	}
 
 	template<typename Ret>
-	Ret CallMemberFunction(const char *name)
+	Ret call(const char *name)
 	{
 		PREPARE(m_plState,m_iKeyIndex);
 		return doLuaCall<Ret>::doCall(m_plState,1,0,true);
 	}
 
 	template<typename Ret,typename Arg1>
-	Ret CallMemberFunction(const char *name,Arg1 arg1)
+	Ret call(const char *name,Arg1 arg1)
 	{
 		PREPARE(m_plState,m_iKeyIndex);
 		push_obj<Arg1>(m_plState,arg1);
@@ -131,7 +133,7 @@ public:
 	}
 
 	template<typename Ret,typename Arg1,typename Arg2>
-	Ret CallMemberFunction(const char *name,Arg1 arg1,Arg2 arg2)
+	Ret call(const char *name,Arg1 arg1,Arg2 arg2)
 	{
 		PREPARE(m_plState,m_iKeyIndex);
 		push_obj<Arg1>(m_plState,arg1);
@@ -140,7 +142,7 @@ public:
 	}
 
 	template<typename Ret,typename Arg1,typename Arg2,typename Arg3>
-	Ret CallMemberFunction(const char *name,Arg1 arg1,Arg2 arg2,Arg3 arg3)
+	Ret call(const char *name,Arg1 arg1,Arg2 arg2,Arg3 arg3)
 	{
 		PREPARE(m_plState,m_iKeyIndex);
 		push_obj<Arg1>(m_plState,arg1);
@@ -150,7 +152,7 @@ public:
 	}
 
 	template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename Arg4>
-	Ret CallMemberFunction(const char *name,Arg1 arg1,Arg2 arg2,Arg3 arg3,Arg4 arg4)
+	Ret call(const char *name,Arg1 arg1,Arg2 arg2,Arg3 arg3,Arg4 arg4)
 	{
 		PREPARE(m_plState,m_iKeyIndex);
 		push_obj<Arg1>(m_plState,arg1);
@@ -180,4 +182,5 @@ private:
 	int m_iKeyIndex;
 	int *counter;
 };
+}
 #endif

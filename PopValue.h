@@ -16,6 +16,7 @@
 */	
 #ifndef _POPVALUE_H
 #define _POPVALUE_H
+namespace lWrapper{
 
 template<typename T>
 inline T _pop(lua_State *L,Int2Type<true>)
@@ -170,6 +171,6 @@ inline luatable popvalue(lua_State *L)
 	lua_pop(L,1);
 	return ret;
 }
-
+}
 
 #endif

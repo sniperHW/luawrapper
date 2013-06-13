@@ -16,6 +16,8 @@
 */	
 #ifndef _OBJPUSH_H
 #define _OBJPUSH_H
+
+namespace lWrapper{
 //调用lua函数时参数压栈的抽象
 template<typename T>
 class objPush
@@ -259,6 +261,6 @@ any_pusher *create_any_pusher()
 {
 	return new concrete_any_pusher<T>;
 }
-
+}
 
 #endif

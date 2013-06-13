@@ -25,6 +25,8 @@
 #include "Trait.h"
 #include "luacommon.h"
 
+namespace lWrapper{
+
 class luaObject;
 class any;
 typedef std::vector<any> luatable;
@@ -227,5 +229,5 @@ inline std::string any_cast(const any & operand)
 	any::holder<std::string> *tmp = static_cast<any::holder<std::string> *>(operand.content);
 	return tmp->held;
 }
-
+}
 #endif

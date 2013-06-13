@@ -4,7 +4,7 @@
 #include "luaObject.h"
 #include "any.h"
 #include <string.h>
-
+namespace lWrapper{
 template<typename T>
 void push_obj(lua_State *L,const T obj);
 
@@ -327,7 +327,7 @@ public:
 
     static int NewObj(lua_State *L,const T *ptr) 
     {
-        return ::NewObj(L,ptr,luaRegisterClass<T>::GetClassName());
+        return lWrapper::NewObj(L,ptr,luaRegisterClass<T>::GetClassName());
     }
 
     static int NewIndex(lua_State *L)
@@ -629,5 +629,5 @@ class_def<T> register_class(lua_State *L,const char *name)
 	DefParent<Parent4,T>(Int2Type<isVoid<Parent4>::is_Void>());
 	return class_def<T>();
 }
-
+}
 #endif
