@@ -1,8 +1,7 @@
 #include "luaWrapper.h"
 #include <stdlib.h>
-//std::string luaInvokeName;
 
-bool luaWrapper::load(const char *filename)
+bool luaWrapper::dofile(const char *filename)
 {
     if (luaL_dofile(lState, filename)) {
         const char * error = lua_tostring(lState, -1);
@@ -13,44 +12,19 @@ bool luaWrapper::load(const char *filename)
 	return true;
 }
 
-void luaWrapper::regCFunction()
-{
-}
-
 static void kennyluainit(lua_State *L)
 {			
 	luaL_newmetatable(L, "kenny.lualib");
 	lua_pop(L,1);
 }
 
-bool luaWrapper::init()
+void luaWrapper::init()
 {
 	lState = luaL_newstate();
-	if(!lState)
-		return false;
 	luaL_openlibs(lState);
-	regCFunction();
 	kennyluainit(lState);
 	Integer64::Register2Lua(lState);
-	return true;
 }
-
-extern "C"
-{
-	void *l_alloc (void *ud, void *ptr, size_t osize, size_t nsize)
-	{
-		(void)ud;
-		(void)osize;
-		if(!ptr && nsize==0)return NULL;
-		if (nsize == 0)
-		{
-			free(ptr);
-			return NULL;
-		}else if(ptr ==0)
-			return malloc(nsize);
-		return realloc(ptr, nsize);
-	}
-};
 
 int NewObj(lua_State *L,const void *ptr,const char *classname) 
 {

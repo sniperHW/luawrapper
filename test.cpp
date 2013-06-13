@@ -33,9 +33,10 @@ class test_class_A
 void test_class1(lua_State *L)
 {
 	printf("\n-----测试向lua传递c++对象1-----\n");
-	register_class<test_class_A>(L,"test_class_A");
-	register_property("memb_a",&test_class_A::memb_a);
-	register_member_function("show",&test_class_A::show);
+	register_class<test_class_A>(L,"test_class_A")
+		.property("memb_a",&test_class_A::memb_a)
+		.function("show",&test_class_A::show);
+	
 	test_class_A a;
 	a.memb_a = 100;
 	try{
@@ -135,9 +136,9 @@ public:
 void test_call_virtual_function(lua_State *L)
 {
 	printf("\n-----测试lua调用c++对象虚函数-----\n");
-	register_class<base>(L,"base");
-	register_member_function("show",&base::show);
-	register_member_function("show2",&base::show2);
+	register_class<base>(L,"base")
+		.function("show",&base::show)
+		.function("show2",&base::show2);
 	register_class<child,base>(L,"child");
 	child c;
 	base *b = &c;
@@ -165,17 +166,15 @@ void test_int64(lua_State *L)
 int main()
 {
 	luaWrapper lw;
-	lw.init();
-	lw.load("start.lua");
-	lua_State *L = *(&lw);
-	test_call_c_function(L);
-	test_class1(L);
-	test_pass_luatable(L);
-	test_c_return_luatable(L);
-	test_lua_return_luatable(L);
-	test_op_lua_obj(L);
-	test_call_virtual_function(L);
-	test_int64(L);
+	lw.dofile("start.lua");
+	test_call_c_function(lw);
+	test_class1(lw);
+	test_pass_luatable(lw);
+	test_c_return_luatable(lw);
+	test_lua_return_luatable(lw);
+	test_op_lua_obj(lw);
+	test_call_virtual_function(lw);
+	test_int64(lw);
 	getchar();
 	return 0;
 }

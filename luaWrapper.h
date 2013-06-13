@@ -37,26 +37,17 @@ public:
 		return lState;
 	}
 
-	/*bool reload()
-	{
-		return load();
-	}*/
-
-	luaWrapper(){};
+	void init();
+	luaWrapper(){init();}
 	~luaWrapper()
 	{
 		if(lState)
 			lua_close(lState);
 		lState = NULL;
 	}
-	bool init();
-
-	bool load(const char *filename);
-
-	void regCFunction();
-
-	void LuabindFunction();
-
+	
+	bool dofile(const char *filename);
+	
 private:
 	lua_State *lState;
 };

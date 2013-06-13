@@ -587,9 +587,38 @@ void DefParent(Int2Type<false>)
 template<typename Parent,typename T>
 void DefParent(Int2Type<true>){}
 
+template<typename T>
+class class_def
+{
+public:
+	template<typename property_type>
+	class_def<T> property(const char *name,property_type (T::*property))
+	{
+		memberfield<T> mf;
+		mf.gmv = GetProperty<T,property_type>;
+		mf.property = (void*(T::*))property;
+		mf.smv = SetProperty<T,property_type>;
+		luaClassWrapper<T>::InsertFields(name,mf);
+		return *this;
+	}
+	
+	template<typename FUNTOR>
+	class_def<T> function(const char *fun_name,FUNTOR _func)
+	{
+		typedef typename memberfunbinder<FUNTOR>::CLASS_TYPE T;
+		memberfield<T> mf;
+		mf.function = (void(T::*)())_func;
+		lua_fun fun = memberfunbinder<FUNTOR>::lua_cfunction;	
+		mf.mc = fun;
+		luaClassWrapper<T>::InsertFields(fun_name,mf);
+		return *this;
+	}
+	
+};
+
 //注册一个类,最多支持继承自4个基类
 template<typename T,typename Parent1 = void,typename Parent2 = void,typename Parent3 = void,typename Parent4 = void>
-void register_class(lua_State *L,const char *name)
+class_def<T> register_class(lua_State *L,const char *name)
 {
     luaRegisterClass<T>::SetClassName(name);
     luaClassWrapper<T>::luaopen_objlib(L);
@@ -598,29 +627,7 @@ void register_class(lua_State *L,const char *name)
 	DefParent<Parent2,T>(Int2Type<isVoid<Parent2>::is_Void>());
 	DefParent<Parent3,T>(Int2Type<isVoid<Parent3>::is_Void>());
 	DefParent<Parent4,T>(Int2Type<isVoid<Parent4>::is_Void>());
-}
-
-//注册类的成员变量
-template<typename T,typename property_type>
-void register_property(const char *name,property_type (T::*property))
-{            
-    memberfield<T> mf;
-    mf.gmv = GetProperty<T,property_type>;
-	mf.property = (void*(T::*))property;
-    mf.smv = SetProperty<T,property_type>;
-    luaClassWrapper<T>::InsertFields(name,mf);
-}
-
-//注册类成员函数的接口
-template<typename FUNTOR>
-void register_member_function(const char *fun_name,FUNTOR _func)
-{
-	typedef typename memberfunbinder<FUNTOR>::CLASS_TYPE T;
-    memberfield<T> mf;
-	mf.function = (void(T::*)())_func;
-    lua_fun fun = memberfunbinder<FUNTOR>::lua_cfunction;	
-    mf.mc = fun;
-    luaClassWrapper<T>::InsertFields(fun_name,mf);
+	return class_def<T>();
 }
 
 #endif
