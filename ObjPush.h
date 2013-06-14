@@ -23,10 +23,25 @@ template<typename T>
 class objPush
 {
 public:
-	objPush(lua_State *L,const T arg)
+	objPush(lua_State *L,const T &arg)
+	{
+		_objpush(L,arg,Int2Type<IndexOf<SupportType,T>::value >= 0>());
+	}
+private:
+	void _objpush(lua_State *L,const T &arg,Int2Type<false>)
+	{
+		if(!luaRegisterClass<typename pointerTraits<T>::PointeeType>::isRegister())
+			lua_pushlightuserdata(L,(T*)&arg);
+		else
+			objUserData<typename pointerTraits<T>::PointeeType>::NewObj(L,&arg);		
+	}
+	
+	void _objpush(lua_State *L,const T &arg,Int2Type<true>)
 	{
 		lua_pushnumber(L,(lua_Number)arg);
-	}
+	}	
+	
+	
 };
 
 //对指针类型的特化
@@ -155,7 +170,7 @@ public:
 };
 
 template<typename T>
-void push_obj(lua_State *L,const T obj)
+void push_obj(lua_State *L,const T &obj)
 {
 	objPush<T> _obj(L,obj);
 }

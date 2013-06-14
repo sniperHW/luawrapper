@@ -27,7 +27,7 @@
 
 namespace lWrapper{
 template<typename T>
-void push_obj(lua_State *L,const T obj);
+void push_obj(lua_State *L,const T &obj);
 
 //取出栈顶的值，通知将其出栈
 template<typename T>
@@ -145,7 +145,7 @@ public:
 	static int lua_cfunction(lua_State *L)
 	{
 		typename GetReplaceType<Arg1>::type tmp_arg1 = popvalue<typename GetReplaceType<Arg1>::type>(L);
-		Arg1 arg1 = GetRawValue(tmp_arg1);
+		Arg1 arg1 = GetRawValue<typename GetReplaceType<Arg1>::type>(tmp_arg1);
 		return doCall<Ret>(L,arg1,(__func)lua_touserdata(L,lua_upvalueindex(1)),Int2Type<isVoid<Ret>::is_Void>());
 	}
 
@@ -153,13 +153,13 @@ private:
 	typedef Ret(*__func)(Arg1);
 
 	template<typename Result> 
-	static int doCall(lua_State *L,Arg1 arg1,__func func,Int2Type<false>)
+	static int doCall(lua_State *L,const Arg1 &arg1,__func func,Int2Type<false>)
 	{
 		push_obj<Result>(L,func(arg1));
 		return 1;
 	}
 	template<typename Result> 
-	static int doCall(lua_State *L,Arg1 arg1,__func func,Int2Type<true>)
+	static int doCall(lua_State *L,const Arg1 &arg1,__func func,Int2Type<true>)
 	{
 		func(arg1);
 		return 0;
@@ -182,8 +182,8 @@ public:
 	{
 		typename GetReplaceType<Arg2>::type tmp_arg2 = popvalue<typename GetReplaceType<Arg2>::type>(L);
 		typename GetReplaceType<Arg1>::type tmp_arg1 = popvalue<typename GetReplaceType<Arg1>::type>(L);
-		Arg1 arg1 = GetRawValue(tmp_arg1);
-		Arg2 arg2 = GetRawValue(tmp_arg2);
+		Arg1 arg1 = GetRawValue<typename GetReplaceType<Arg1>::type>(tmp_arg1);
+		Arg2 arg2 = GetRawValue<typename GetReplaceType<Arg2>::type>(tmp_arg2);
 		return doCall<Ret>(L,arg1,arg2,(__func)lua_touserdata(L,lua_upvalueindex(1)),Int2Type<isVoid<Ret>::is_Void>());
 	}
 
@@ -191,14 +191,14 @@ private:
 	typedef Ret(*__func)(Arg1,Arg2);
 
 	template<typename Result> 
-	static int doCall(lua_State *L,Arg1 arg1,Arg2 arg2,__func func,Int2Type<false>)
+	static int doCall(lua_State *L,const Arg1 &arg1,const Arg2 &arg2,__func func,Int2Type<false>)
 	{
 		push_obj<Result>(L,func(arg1,arg2));
 		return 1;
 	}
 
 	template<typename Result> 
-	static int doCall(lua_State *L,Arg1 arg1,Arg2 arg2,__func func,Int2Type<true>)
+	static int doCall(lua_State *L,const Arg1 &arg1,const Arg2 &arg2,__func func,Int2Type<true>)
 	{
 		func(arg1,arg2);
 		return 0;
@@ -221,9 +221,9 @@ public:
 		typename GetReplaceType<Arg3>::type tmp_arg3 = popvalue<typename GetReplaceType<Arg3>::type>(L);
 		typename GetReplaceType<Arg2>::type tmp_arg2 = popvalue<typename GetReplaceType<Arg2>::type>(L);
 		typename GetReplaceType<Arg1>::type tmp_arg1 = popvalue<typename GetReplaceType<Arg1>::type>(L);
-		Arg1 arg1 = GetRawValue(tmp_arg1);
-		Arg2 arg2 = GetRawValue(tmp_arg2);
-		Arg3 arg3 = GetRawValue(tmp_arg3);
+		Arg1 arg1 = GetRawValue<typename GetReplaceType<Arg1>::type>(tmp_arg1);
+		Arg2 arg2 = GetRawValue<typename GetReplaceType<Arg2>::type>(tmp_arg2);
+		Arg2 arg3 = GetRawValue<typename GetReplaceType<Arg3>::type>(tmp_arg3);
 		return doCall<Ret>(L,arg1,arg2,arg3,(__func)lua_touserdata(L,lua_upvalueindex(1)),Int2Type<isVoid<Ret>::is_Void>());
 	}
 
@@ -231,14 +231,14 @@ private:
 	typedef Ret(*__func)(Arg1,Arg2,Arg3);
 
 	template<typename Result> 
-	static int doCall(lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 arg3,__func func,Int2Type<false>)
+	static int doCall(lua_State *L,const Arg1 &arg1,const Arg2 &arg2,const Arg3 &arg3,__func func,Int2Type<false>)
 	{
 		push_obj<Result>(L,func(arg1,arg2,arg3));
 		return 1;
 	}
 
 	template<typename Result> 
-	static int doCall(lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 arg3,__func func,Int2Type<true>)
+	static int doCall(lua_State *L,const Arg1 &arg1,const Arg2 &arg2,const Arg3 &arg3,__func func,Int2Type<true>)
 	{
 		func(arg1,arg2,arg3);
 		return 0;
@@ -263,24 +263,24 @@ public:
 		typename GetReplaceType<Arg3>::type tmp_arg3 = popvalue<typename GetReplaceType<Arg3>::type>(L);
 		typename GetReplaceType<Arg2>::type tmp_arg2 = popvalue<typename GetReplaceType<Arg2>::type>(L);
 		typename GetReplaceType<Arg1>::type tmp_arg1 = popvalue<typename GetReplaceType<Arg1>::type>(L);
-		Arg1 arg1 = GetRawValue(tmp_arg1);
-		Arg2 arg2 = GetRawValue(tmp_arg2);
-		Arg3 arg3 = GetRawValue(tmp_arg3);
-		Arg4 arg4 = GetRawValue(tmp_arg4);
+		Arg1 arg1 = GetRawValue<typename GetReplaceType<Arg1>::type>(tmp_arg1);
+		Arg2 arg2 = GetRawValue<typename GetReplaceType<Arg2>::type>(tmp_arg2);
+		Arg2 arg3 = GetRawValue<typename GetReplaceType<Arg3>::type>(tmp_arg3);
+		Arg2 arg4 = GetRawValue<typename GetReplaceType<Arg4>::type>(tmp_arg4);
 		return doCall<Ret>(L,arg1,arg2,arg3,arg4,(__func)lua_touserdata(L,lua_upvalueindex(1)),Int2Type<isVoid<Ret>::is_Void>());
 	}
 
 private:
 	typedef Ret(*__func)(Arg1,Arg2,Arg3,Arg4);
 	template<typename Result> 
-	static int doCall(lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 arg3,Arg4 arg4,__func func,Int2Type<false>)
+	static int doCall(lua_State *L,const Arg1 &arg1,const Arg2 &arg2,const Arg3 &arg3,const Arg4 &arg4,__func func,Int2Type<false>)
 	{
 		push_obj<Result>(L,func(arg1,arg2,arg3,arg4));
 		return 1;
 	}
 
 	template<typename Result>
-	static int doCall(lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 arg3,Arg4 arg4,__func func,Int2Type<true>)
+	static int doCall(lua_State *L,const Arg1 &arg1,const Arg2 &arg2,const Arg3 &arg3,const Arg4 &arg4,__func func,Int2Type<true>)
 	{
 		func(arg1,arg2,arg3,arg4);
 		return 0;
@@ -302,7 +302,7 @@ Ret call(const char *funname,lua_State *L)
 }
 
 template<typename Ret,typename Arg1>
-Ret call(const char *funname,lua_State *L,Arg1 arg1)
+Ret call(const char *funname,lua_State *L,const Arg1 &arg1)
 {
 	lua_getglobal(L,funname);
 	push_obj<Arg1>(L,arg1);
@@ -310,7 +310,7 @@ Ret call(const char *funname,lua_State *L,Arg1 arg1)
 }
 
 template<typename Ret,typename Arg1,typename Arg2>
-Ret call(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2)
+Ret call(const char *funname,lua_State *L,const Arg1 &arg1,const Arg2 &arg2)
 {
 	lua_getglobal(L,funname);
 	push_obj<Arg1>(L,arg1);
@@ -319,7 +319,7 @@ Ret call(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2)
 }
 
 template<typename Ret,typename Arg1,typename Arg2,typename Arg3>
-Ret call(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 arg3)
+Ret call(const char *funname,lua_State *L,const Arg1 &arg1,const Arg2 &arg2,const Arg3 &arg3)
 {
 	lua_getglobal(L,funname);
 	push_obj<Arg1>(L,arg1);
@@ -329,7 +329,7 @@ Ret call(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 arg3)
 }
 
 template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename Arg4>
-Ret call(const char *funname,lua_State *L,Arg1 arg1,Arg2 arg2,Arg3 arg3,Arg4 arg4)
+Ret call(const char *funname,lua_State *L,const Arg1 &arg1,const Arg2 &arg2,const Arg3 &arg3,const Arg4 &arg4)
 {
 	lua_getglobal(L,funname);
 	push_obj<Arg1>(L,arg1);

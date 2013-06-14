@@ -32,7 +32,7 @@ template<typename T>
 T popvalue(lua_State *L);	
 
 template<typename T>
-void push_obj(lua_State *L,const T obj);
+void push_obj(lua_State *L,const T &obj);
 
 //代表lua中的一个对象(其实就是一个表)
 class luaObject
@@ -125,7 +125,7 @@ public:
 	}
 
 	template<typename Ret,typename Arg1>
-	Ret call(const char *name,Arg1 arg1)
+	Ret call(const char *name,const Arg1 &arg1)
 	{
 		PREPARE(m_plState,m_iKeyIndex);
 		push_obj<Arg1>(m_plState,arg1);
@@ -133,7 +133,7 @@ public:
 	}
 
 	template<typename Ret,typename Arg1,typename Arg2>
-	Ret call(const char *name,Arg1 arg1,Arg2 arg2)
+	Ret call(const char *name,const Arg1 &arg1,const Arg2 &arg2)
 	{
 		PREPARE(m_plState,m_iKeyIndex);
 		push_obj<Arg1>(m_plState,arg1);
@@ -142,7 +142,7 @@ public:
 	}
 
 	template<typename Ret,typename Arg1,typename Arg2,typename Arg3>
-	Ret call(const char *name,Arg1 arg1,Arg2 arg2,Arg3 arg3)
+	Ret call(const char *name,const Arg1 &arg1,const Arg2 &arg2,const Arg3 &arg3)
 	{
 		PREPARE(m_plState,m_iKeyIndex);
 		push_obj<Arg1>(m_plState,arg1);
@@ -152,7 +152,7 @@ public:
 	}
 
 	template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename Arg4>
-	Ret call(const char *name,Arg1 arg1,Arg2 arg2,Arg3 arg3,Arg4 arg4)
+	Ret call(const char *name,const Arg1 &arg1,const Arg2 &arg2,const Arg3 &arg3,const Arg4 &arg4)
 	{
 		PREPARE(m_plState,m_iKeyIndex);
 		push_obj<Arg1>(m_plState,arg1);

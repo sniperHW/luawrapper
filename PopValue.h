@@ -33,11 +33,23 @@ inline T _pop(lua_State *L,Int2Type<true>)
 }
 
 template<typename T>
-inline T _pop(lua_State *L,Int2Type<false>)
+inline T _pop_impl(lua_State *L,Int2Type<true>)
 {
 	T ret = (T)lua_tonumber(L,-1);
 	lua_pop(L,1);
 	return ret;
+}
+
+template<typename T>
+inline T _pop_impl(lua_State *L,Int2Type<false>)
+{
+	return *_pop<typename refTraits<T>::RefType*>(L,Int2Type<true>());
+}
+
+template<typename T>
+inline T _pop(lua_State *L,Int2Type<false>)
+{
+	return _pop_impl<T>(L,Int2Type<IndexOf<SupportType,T>::value >= 0>());
 }
 
 //从lua栈中弹出栈顶元素

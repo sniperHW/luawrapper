@@ -6,7 +6,7 @@
 #include <string.h>
 namespace lWrapper{
 template<typename T>
-void push_obj(lua_State *L,const T obj);
+void push_obj(lua_State *L,const T &obj);
 
 //取出栈顶的值，通知将其出栈
 template<typename T>
@@ -430,7 +430,7 @@ public:
         objUserData<Cla> *obj = objUserData<Cla>::checkobjuserdata(L,1);
         Cla *cla = obj->ptr;
         typename GetReplaceType<Arg1>::type tmp_arg1 = popvalue<typename GetReplaceType<Arg1>::type>(L);
-        Arg1 arg1 = GetRawValue(tmp_arg1);
+		Arg1 arg1 = GetRawValue<typename GetReplaceType<Arg1>::type>(tmp_arg1);
         return doCall<Ret>(L,cla,arg1,Int2Type<isVoid<Ret>::is_Void>());
     }
 
@@ -467,8 +467,8 @@ public:
         Cla *cla = obj->ptr;
         typename GetReplaceType<Arg2>::type tmp_arg2 = popvalue<typename GetReplaceType<Arg2>::type>(L);
         typename GetReplaceType<Arg1>::type tmp_arg1 = popvalue<typename GetReplaceType<Arg1>::type>(L);
-        Arg1 arg1 = GetRawValue(tmp_arg1);
-        Arg2 arg2 = GetRawValue(tmp_arg2);
+		Arg1 arg1 = GetRawValue<typename GetReplaceType<Arg1>::type>(tmp_arg1);
+		Arg2 arg2 = GetRawValue<typename GetReplaceType<Arg2>::type>(tmp_arg2);
         return doCall<Ret>(L,cla,arg1,arg2,Int2Type<isVoid<Ret>::is_Void>());
     }
 
@@ -505,9 +505,9 @@ public:
         typename GetReplaceType<Arg3>::type tmp_arg3 = popvalue<typename GetReplaceType<Arg3>::type>(L);
         typename GetReplaceType<Arg2>::type tmp_arg2 = popvalue<typename GetReplaceType<Arg2>::type>(L);
         typename GetReplaceType<Arg1>::type tmp_arg1 = popvalue<typename GetReplaceType<Arg1>::type>(L);
-        Arg1 arg1 = GetRawValue(tmp_arg1);
-        Arg2 arg2 = GetRawValue(tmp_arg2);
-        Arg3 arg3 = GetRawValue(tmp_arg3);
+		Arg1 arg1 = GetRawValue<typename GetReplaceType<Arg1>::type>(tmp_arg1);
+		Arg2 arg2 = GetRawValue<typename GetReplaceType<Arg2>::type>(tmp_arg2);
+		Arg2 arg3 = GetRawValue<typename GetReplaceType<Arg3>::type>(tmp_arg3);
         return doCall<Ret>(L,cla,arg1,arg2,arg3,Int2Type<isVoid<Ret>::is_Void>());
     }
 
@@ -545,10 +545,10 @@ public:
         typename GetReplaceType<Arg3>::type tmp_arg3 = popvalue<typename GetReplaceType<Arg3>::type>(L);
         typename GetReplaceType<Arg2>::type tmp_arg2 = popvalue<typename GetReplaceType<Arg2>::type>(L);
         typename GetReplaceType<Arg1>::type tmp_arg1 = popvalue<typename GetReplaceType<Arg1>::type>(L);
-        Arg1 arg1 = GetRawValue(tmp_arg1);
-        Arg2 arg2 = GetRawValue(tmp_arg2);
-        Arg3 arg3 = GetRawValue(tmp_arg3);
-        Arg4 arg4 = GetRawValue(tmp_arg4);
+		Arg1 arg1 = GetRawValue<typename GetReplaceType<Arg1>::type>(tmp_arg1);
+		Arg2 arg2 = GetRawValue<typename GetReplaceType<Arg2>::type>(tmp_arg2);
+		Arg2 arg3 = GetRawValue<typename GetReplaceType<Arg3>::type>(tmp_arg3);
+		Arg2 arg4 = GetRawValue<typename GetReplaceType<Arg4>::type>(tmp_arg4);
         return doCall<Ret>(L,cla,arg1,arg2,arg3,arg4,Int2Type<isVoid<Ret>::is_Void>());
     }
 

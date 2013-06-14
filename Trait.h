@@ -54,6 +54,29 @@ struct pointerTraits<T*>
 	typedef T PointeeType;
 };
 
+//pointer traits
+template<typename T>
+struct refTraits
+{
+	enum { isRef = false};
+	typedef T RefType;
+};
+
+template<typename T>
+struct refTraits<const T&>
+{
+	enum { isRef = true};
+	typedef T RefType;
+};
+
+template<typename T>
+struct refTraits<T&>
+{
+	enum { isPointer = true};
+	typedef T RefType;
+};
+/////
+
 template<typename T>
 struct isVoid
 {

@@ -17,11 +17,13 @@
 #ifndef _UTILITY
 #define _UTILITY
 #include "TypeList.h"
+#include "Trait.h"
 
 template<typename T>
 struct GetReplaceType
 {
 	typedef T type;
+	//typedef typename refTraits<T>::RefType type;
 };
 
 template<>
@@ -42,14 +44,17 @@ struct GetRawType
 	typedef T type;
 };
 
+template<typename T>
+struct GetRawType<T&>
+{
+	typedef T &type;
+};
+
 template<>
 struct GetRawType<std::string>
 {
 	typedef const char * type;
 };
-
-//template<typename T>
-//inline typename GetRawType<T>::type GetRawValue(T &in);
 
 template<typename T>
 inline typename GetRawType<T>::type GetRawValue(T &in)

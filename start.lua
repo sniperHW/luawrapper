@@ -51,7 +51,7 @@ function test4()
 end
 
 function test5()
-	return {1,2,3,4,5,6}
+	return {"a","b","c","d","e","f"}
 end
 
 function test6()
@@ -69,6 +69,19 @@ end
 function test8(a,b)
 	print(a + b * 2)
 	print(a*20 - b * 2)
+end
+
+function test9(obj)
+	print(obj.memb_a)
+	obj.memb_a = 101
+	obj:show()
+end
+function test10(obj)
+	arg_c_object(obj)
+end
+
+function test11(obj)
+	arg_c_object_ref(obj)
 end
 
 

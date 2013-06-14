@@ -36,7 +36,7 @@ class test_class_A
 
 void test_class1(lua_State *L)
 {
-	printf("\n-----测试向lua传递c++对象1-----\n");
+	printf("\n-----测试向lua传递c++对象指针-----\n");
 	lWrapper::register_class<test_class_A>(L,"test_class_A")
 		.property("memb_a",&test_class_A::memb_a)
 		.function("show",&test_class_A::show);
@@ -92,7 +92,7 @@ void test_lua_return_luatable(lua_State *L)
 	try{
 		luatable lt = lWrapper::call<luatable>("test5",L);
 		for(int i = 0 ;i < lt.size(); ++i)
-			printf("%d\n",any_cast<int>(lt[i]));
+			printf("%s\n",any_cast<const char*>(lt[i]));
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -167,6 +167,64 @@ void test_int64(lua_State *L)
 	}	
 }
 
+void test_pass_c_object(lua_State *L)
+{
+	printf("\n-----测试向lua传递c++对象-----\n");
+	test_class_A a;
+	a.memb_a = 100;
+	try{
+		lWrapper::call<void>("test9",L,a);
+	}catch(std::string &err)
+	{
+		printf("%s\n",err.c_str());
+	}
+	printf("调用完test9之后,a.memb_a:%d\n",a.memb_a);
+}
+
+void arg_c_object(test_class_A a)
+{
+	printf("%d\n",a.memb_a);
+	a.memb_a = 101;
+}
+
+void test_call_c_pass_obj(lua_State *L)
+{
+	printf("\n-----测试lua向C++传递对象-----\n");
+	test_class_A a;
+	a.memb_a = 100;
+	lWrapper::register_function(L,"arg_c_object",arg_c_object);
+	try{
+		lWrapper::call<void>("test10",L,a);
+	}catch(std::string &err)
+	{
+		printf("%s\n",err.c_str());
+	}
+	printf("调用完test10之后,a.memb_a:%d\n",a.memb_a);
+}
+
+void arg_c_object_ref(test_class_A &a)
+{
+	printf("%d\n",a.memb_a);
+	a.memb_a = 101;
+}
+
+void test_call_c_pass_obj_ref(lua_State *L)
+{
+	printf("\n-----测试lua向C++传递对象的引用-----\n");
+	test_class_A a;
+	a.memb_a = 100;
+	lWrapper::register_function(L,"arg_c_object_ref",arg_c_object_ref);
+	try{
+		lWrapper::call<void>("test11",L,a);
+	}catch(std::string &err)
+	{
+		printf("%s\n",err.c_str());
+	}
+	printf("调用完test11之后,a.memb_a:%d\n",a.memb_a);
+}
+
+
+
 int main()
 {
 	lWrapper::luaWrapper lw;
@@ -179,6 +237,9 @@ int main()
 	test_op_lua_obj(lw);
 	test_call_virtual_function(lw);
 	test_int64(lw);
+	test_pass_c_object(lw);
+	test_call_c_pass_obj(lw);
+	test_call_c_pass_obj_ref(lw);
 	getchar();
 	return 0;
 }
