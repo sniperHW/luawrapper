@@ -742,26 +742,7 @@ public:
 		luaClassWrapper<T>::InsertFields(fun_name,mf);
 		return *this;
 	}
-			
-	template<typename ARG1>
-	void _constructor(Int2Type<true>)
-	{
-		memberfield<T> mf;
-		lua_fun fun = construct_function0::lua_cfunction;	
-		mf.mc = fun;
-		_constructor(0,mf);
-	}
-	
-	template<typename ARG1>
-	void _constructor(Int2Type<false>)
-	{
-		memberfield<T> mf;
-		lua_fun fun = construct_function1<ARG1>::lua_cfunction;	
-		mf.mc = fun;
-		_constructor(1,mf);
-	}
-	
-	
+				
 	template<typename ARG1>
 	class_def<T> constructor()
 	{
@@ -800,6 +781,24 @@ public:
 	}	
 	
 private:
+	template<typename ARG1>
+	void _constructor(Int2Type<true>)
+	{
+		memberfield<T> mf;
+		lua_fun fun = construct_function0::lua_cfunction;	
+		mf.mc = fun;
+		_constructor(0,mf);
+	}
+	
+	template<typename ARG1>
+	void _constructor(Int2Type<false>)
+	{
+		memberfield<T> mf;
+		lua_fun fun = construct_function1<ARG1>::lua_cfunction;	
+		mf.mc = fun;
+		_constructor(1,mf);
+	}
+
 	void _constructor(int arg_size,memberfield<T> &mf)
 	{
 		if(1 == luaClassWrapper<T>::InsertConstructors(arg_size,mf))
