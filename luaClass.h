@@ -277,11 +277,11 @@ class luaClassWrapper
             luaL_newmetatable(L, luaRegisterClass<T>::GetClassName());
             lua_pushstring(L, "__index");
             lua_pushcfunction(L, &objUserData<T>::Index);
-            lua_settable(L, -3);  
+            lua_settable(L, -3); 
 
-            lua_pushstring(L, "__call");
-            lua_pushcfunction(L, &objUserData<T>::Call);
-            lua_settable(L, -3);
+			lua_pushstring(L,"__gc");
+			lua_pushcfunction(L, &objUserData<T>::on_gc);
+			lua_rawset(L, -3);			
             
             lua_pushstring(L, "__newindex");
             lua_pushcfunction(L, &objUserData<T>::NewIndex);  
@@ -300,14 +300,25 @@ class luaClassWrapper
         static void InsertFields(const char *name,memberfield<T> &mf)
         {
             fields.insert(std::make_pair(std::string(name),mf));
-        }        
+        }
+		
+		static int InsertConstructors(int arg_count,memberfield<T> &mf)
+		{
+			constructors.insert(std::make_pair(arg_count,mf));
+			return (int)constructors.size();
+		}
+        
     private:
         static std::map<std::string,memberfield<T> > fields;
+		static std::map<int,memberfield<T> > constructors;
 };
 
 
 template<typename T>
 std::map<std::string,memberfield<T> > luaClassWrapper<T>::fields;
+
+template<typename T>
+std::map<int,memberfield<T> > luaClassWrapper<T>::constructors;
 
 extern int NewObj(lua_State *L,const void *ptr,const char *classname);
 
@@ -363,14 +374,40 @@ public:
     }
 
     
-    static int Call(lua_State *L)
+    static int Construct(lua_State *L)
     {
-        return 0;
+        int arg_size = lua_gettop(L);
+		typename std::map<int,memberfield<T> >::iterator it = luaClassWrapper<T>::constructors.find(arg_size);
+		if(it != luaClassWrapper<T>::constructors.end())
+		{
+			it->second.mc(L);
+			luaL_getmetatable(L, "kenny.lualib");
+			lua_pushstring(L,luaRegisterClass<T>::GetClassName());
+			lua_gettable(L,-2);
+			lua_setmetatable(L, -3);
+			lua_pop(L,1);//pop mt kenny.lualib
+		}
+		else
+			lua_pushnil(L);
+		return 1;
     }
+	
+	static int on_gc(lua_State *L)
+	{
+		printf("on_gc\n");
+		objUserData<T> *self  = (objUserData<T> *)lua_touserdata(L,1);
+		if(self->construct_by_lua)
+		{
+			printf("create_by_lua delete\n");
+			delete self->ptr;
+		}
+		return 0;
+	}
     
 public:
     T *ptr;
 	int m_flag;
+	bool construct_by_lua;
 
 };
 
@@ -587,10 +624,103 @@ void DefParent(Int2Type<false>)
 template<typename Parent,typename T>
 void DefParent(Int2Type<true>){}
 
+
+
 template<typename T>
 class class_def
 {
-public:
+private:
+	class construct_function0
+	{
+	public:
+		static int lua_cfunction(lua_State *L)
+		{    
+			objUserData<T> *obj = (objUserData<T> *)lua_newuserdata(L, sizeof(objUserData<T>));
+			obj->m_flag = 0x1234AFEC;
+			obj->construct_by_lua = true;	
+			obj->ptr = new T;
+			return 1;
+		}    
+	};
+
+	template<typename Arg1>
+	class construct_function1
+	{
+	public:
+		static int lua_cfunction(lua_State *L)
+		{    
+			typename GetReplaceType<Arg1>::type tmp_arg1 = popvalue<typename GetReplaceType<Arg1>::type>(L);
+			Arg1 arg1 = GetRawValue<typename GetReplaceType<Arg1>::type>(tmp_arg1);
+			objUserData<T> *obj = (objUserData<T> *)lua_newuserdata(L, sizeof(objUserData<T>));
+			obj->m_flag = 0x1234AFEC;
+			obj->construct_by_lua = true;	
+			obj->ptr = new T(arg1);
+			return 1;
+		}    
+	};
+
+	template<typename Arg1,typename Arg2>
+	class construct_function2
+	{
+	public:
+		static int lua_cfunction(lua_State *L)
+		{    
+			typename GetReplaceType<Arg1>::type tmp_arg1 = popvalue<typename GetReplaceType<Arg1>::type>(L);
+			Arg1 arg1 = GetRawValue<typename GetReplaceType<Arg1>::type>(tmp_arg1);
+			typename GetReplaceType<Arg2>::type tmp_arg2 = popvalue<typename GetReplaceType<Arg2>::type>(L);
+			Arg2 arg2 = GetRawValue<typename GetReplaceType<Arg2>::type>(tmp_arg2);		
+			objUserData<T> *obj = (objUserData<T> *)lua_newuserdata(L, sizeof(objUserData<T>));
+			obj->m_flag = 0x1234AFEC;
+			obj->construct_by_lua = true;	
+			obj->ptr = new T(arg1,arg2);
+			return 1;
+		}    
+	};
+
+	template<typename Arg1,typename Arg2,typename Arg3>
+	class construct_function3
+	{
+	public:
+		static int lua_cfunction(lua_State *L)
+		{    
+			typename GetReplaceType<Arg1>::type tmp_arg1 = popvalue<typename GetReplaceType<Arg1>::type>(L);
+			Arg1 arg1 = GetRawValue<typename GetReplaceType<Arg1>::type>(tmp_arg1);
+			typename GetReplaceType<Arg2>::type tmp_arg2 = popvalue<typename GetReplaceType<Arg2>::type>(L);
+			Arg2 arg2 = GetRawValue<typename GetReplaceType<Arg2>::type>(tmp_arg2);
+			typename GetReplaceType<Arg3>::type tmp_arg3 = popvalue<typename GetReplaceType<Arg3>::type>(L);
+			Arg3 arg3 = GetRawValue<typename GetReplaceType<Arg3>::type>(tmp_arg3);			
+			objUserData<T> *obj = (objUserData<T> *)lua_newuserdata(L, sizeof(objUserData<T>));
+			obj->m_flag = 0x1234AFEC;
+			obj->construct_by_lua = true;	
+			obj->ptr = new T(arg1,arg2,arg3);
+			return 1;
+		}    
+	};
+
+	template<typename Arg1,typename Arg2,typename Arg3,typename Arg4>
+	class construct_function4
+	{
+	public:
+		static int lua_cfunction(lua_State *L)
+		{    
+			typename GetReplaceType<Arg1>::type tmp_arg1 = popvalue<typename GetReplaceType<Arg1>::type>(L);
+			Arg1 arg1 = GetRawValue<typename GetReplaceType<Arg1>::type>(tmp_arg1);
+			typename GetReplaceType<Arg2>::type tmp_arg2 = popvalue<typename GetReplaceType<Arg2>::type>(L);
+			Arg2 arg2 = GetRawValue<typename GetReplaceType<Arg2>::type>(tmp_arg2);
+			typename GetReplaceType<Arg3>::type tmp_arg3 = popvalue<typename GetReplaceType<Arg3>::type>(L);
+			Arg3 arg3 = GetRawValue<typename GetReplaceType<Arg3>::type>(tmp_arg3);
+			typename GetReplaceType<Arg4>::type tmp_arg4 = popvalue<typename GetReplaceType<Arg4>::type>(L);
+			Arg4 arg4 = GetRawValue<typename GetReplaceType<Arg4>::type>(tmp_arg4);			
+			objUserData<T> *obj = (objUserData<T> *)lua_newuserdata(L, sizeof(objUserData<T>));
+			obj->m_flag = 0x1234AFEC;
+			obj->construct_by_lua = true;	
+			obj->ptr = new T(arg1,arg2,arg3,arg4);
+			return 1;
+		}    
+	};
+public:	
+	class_def(lua_State *L):L(L){}
+
 	template<typename property_type>
 	class_def<T> property(const char *name,property_type (T::*property))
 	{
@@ -605,7 +735,6 @@ public:
 	template<typename FUNTOR>
 	class_def<T> function(const char *fun_name,FUNTOR _func)
 	{
-		typedef typename memberfunbinder<FUNTOR>::CLASS_TYPE T;
 		memberfield<T> mf;
 		mf.function = (void(T::*)())_func;
 		lua_fun fun = memberfunbinder<FUNTOR>::lua_cfunction;	
@@ -613,6 +742,76 @@ public:
 		luaClassWrapper<T>::InsertFields(fun_name,mf);
 		return *this;
 	}
+		
+	class_def<T> constructor()
+	{
+		memberfield<T> mf;
+		lua_fun fun = construct_function0::lua_cfunction;	
+		mf.mc = fun;
+		_constructor(0,mf);
+		return *this;
+	}
+	
+	template<typename ARG1>
+	class_def<T> constructor()
+	{
+		memberfield<T> mf;
+		lua_fun fun = construct_function1<ARG1>::lua_cfunction;	
+		mf.mc = fun;
+		_constructor(1,mf);
+		return *this;
+	}
+	
+	template<typename ARG1,typename ARG2>
+	class_def<T> constructor()
+	{
+		memberfield<T> mf;
+		lua_fun fun = construct_function2<ARG1,ARG2>::lua_cfunction;	
+		mf.mc = fun;
+		_constructor(2,mf);
+		return *this;
+	}
+
+	template<typename ARG1,typename ARG2,typename ARG3>
+	class_def<T> constructor()
+	{
+		memberfield<T> mf;
+		lua_fun fun = construct_function3<ARG1,ARG2,ARG3>::lua_cfunction;	
+		mf.mc = fun;
+		_constructor(3,mf);
+		return *this;
+	}
+
+	template<typename ARG1,typename ARG2,typename ARG3,typename ARG4>
+	class_def<T> constructor()
+	{
+		memberfield<T> mf;
+		lua_fun fun = construct_function4<ARG1,ARG2,ARG3,ARG4>::lua_cfunction;	
+		mf.mc = fun;
+		_constructor(4,mf);
+		return *this;
+	}	
+	
+private:
+	void _constructor(int arg_size,memberfield<T> &mf)
+	{
+		if(1 == luaClassWrapper<T>::InsertConstructors(arg_size,mf))
+		{
+			lua_getglobal(L,"_G");
+			if(!lua_istable(L, -1))
+			{
+				lua_pop(L,1);
+				lua_newtable(L);
+				lua_pushvalue(L,-1);
+				lua_setglobal(L,"_G");
+			}
+			lua_pushstring(L, luaRegisterClass<T>::GetClassName());
+			lua_pushcfunction(L,objUserData<T>::Construct);
+			lua_settable(L, -3);
+			lua_pop(L,1);
+		}
+	}
+	lua_State *L;
 	
 };
 
@@ -627,7 +826,7 @@ class_def<T> register_class(lua_State *L,const char *name)
 	DefParent<Parent2,T>(Int2Type<isVoid<Parent2>::is_Void>());
 	DefParent<Parent3,T>(Int2Type<isVoid<Parent3>::is_Void>());
 	DefParent<Parent4,T>(Int2Type<isVoid<Parent4>::is_Void>());
-	return class_def<T>();
+	return class_def<T>(L);
 }
 }
 #endif

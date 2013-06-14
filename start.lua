@@ -84,4 +84,11 @@ function test11(obj)
 	arg_c_object_ref(obj)
 end
 
+function test12(obj)
+	local t1 = test_class_A()
+	t1.memb_a = 100
+	local t2 = test_class_A(t1)
+	print(t2.memb_a)		
+end
+
 

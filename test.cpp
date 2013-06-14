@@ -27,6 +27,18 @@ void test_call_c_function(lua_State *L)
 class test_class_A
 {
 	public:
+		test_class_A():memb_a(0)
+		{
+			printf("test_class_A void\n");
+		}
+		test_class_A(const test_class_A &other):memb_a(other.memb_a)
+		{
+			printf("test_class_A con %d \n",memb_a);
+		}		
+		~test_class_A()
+		{
+			printf("~test_class_A\n");
+		}
 		int  memb_a;
 		void show()
 		{
@@ -38,6 +50,8 @@ void test_class1(lua_State *L)
 {
 	printf("\n-----测试向lua传递c++对象指针-----\n");
 	lWrapper::register_class<test_class_A>(L,"test_class_A")
+		.constructor()
+		.constructor<test_class_A &>()
 		.property("memb_a",&test_class_A::memb_a)
 		.function("show",&test_class_A::show);
 	
@@ -223,6 +237,17 @@ void test_call_c_pass_obj_ref(lua_State *L)
 	printf("调用完test11之后,a.memb_a:%d\n",a.memb_a);
 }
 
+void test_create_c_obj(lua_State *L)
+{
+	printf("\n-----测试lua中构造c++对象-----\n");
+	try{
+		lWrapper::call<void>("test12",L);
+	}catch(std::string &err)
+	{
+		printf("%s\n",err.c_str());
+	}	
+}
+
 
 
 int main()
@@ -240,6 +265,7 @@ int main()
 	test_pass_c_object(lw);
 	test_call_c_pass_obj(lw);
 	test_call_c_pass_obj_ref(lw);
+	test_create_c_obj(lw);
 	getchar();
 	return 0;
 }

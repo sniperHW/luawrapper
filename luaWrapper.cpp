@@ -32,6 +32,7 @@ int NewObj(lua_State *L,const void *ptr,const char *classname)
     objUserData<void> *obj = (objUserData<void> *)lua_newuserdata(L, nbytes);
     obj->ptr = const_cast<void*>(ptr);
 	obj->m_flag = 0x1234AFEC;
+	obj->construct_by_lua = false;
     luaL_getmetatable(L, "kenny.lualib");
     lua_pushstring(L,classname);
     lua_gettable(L,-2);
