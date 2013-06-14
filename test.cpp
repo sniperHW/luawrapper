@@ -50,8 +50,8 @@ void test_class1(lua_State *L)
 {
 	printf("\n-----测试向lua传递c++对象指针-----\n");
 	lWrapper::register_class<test_class_A>(L,"test_class_A")
-		.constructor()
-		.constructor<test_class_A &>()
+		.constructor<void>()//无参构造
+		.constructor<const test_class_A&>()//一个参数构造
 		.property("memb_a",&test_class_A::memb_a)
 		.function("show",&test_class_A::show);
 	
