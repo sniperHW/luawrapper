@@ -91,4 +91,10 @@ function test12(obj)
 	print(t2.memb_a)		
 end
 
+t_table = {1,2,3,4}
+
+function test13()
+	print(TEST_GLOBAL)
+end
+
 
