@@ -15,7 +15,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */	
 /*
-* brief : ×¢²áÈ«¾Öº¯Êı
+* brief : æ³¨å†Œå…¨å±€å‡½æ•°
 * Author : huangwei
 */
 #ifndef _LUAFUNCTION_H
@@ -29,7 +29,7 @@ namespace lWrapper{
 template<typename T>
 void push_obj(lua_State *L,const T &obj);
 
-//È¡³öÕ»¶¥µÄÖµ£¬Í¨Öª½«Æä³öÕ»
+//å–å‡ºæ ˆé¡¶çš„å€¼ï¼Œé€šçŸ¥å°†å…¶å‡ºæ ˆ
 template<typename T>
 T popvalue(lua_State *L);
 
@@ -43,7 +43,7 @@ public:
 		return call(L,nArgs,errFunc,Int2Type<IndexOf<voidType,Ret>::value == 0>(),callByObject);
 	}
 private:
-	//·µ»Øvoid
+	//è¿”å›void
 	static Ret call(lua_State *L,int nArgs,int errFunc,Int2Type<true>,bool callByObject)
 	{
 		if(lua_pcall(L, nArgs, 0, errFunc ) != 0)
@@ -57,7 +57,7 @@ private:
 			lua_pop(L,1);
 	}
 	
-	//ÓĞ·µ»ØÖµ
+	//æœ‰è¿”å›å€¼
 	static Ret call(lua_State *L,int nArgs,int errFunc,Int2Type<false>,bool callByObject)
 	{
 		Ret ret = _call(L,nArgs,errFunc,callByObject);
@@ -66,7 +66,7 @@ private:
 		return ret;
 	}
 
-	//Ö»ÓĞÒ»¸ö·µ»ØÖµ
+	//åªæœ‰ä¸€ä¸ªè¿”å›å€¼
 	static Ret _call(lua_State *L,int nArgs,int errFunc,bool callByObject)
 	{
 		if(lua_pcall(L, nArgs, 1, errFunc ) != 0)
@@ -93,8 +93,8 @@ typedef int (*lua_fun)(lua_State *);
 template<typename FUNCTOR>
 class funbinder{};
 
-//ÓÃÓÚ×¢²áÈ«¾Öº¯Êı
-//ÎŞ²Î
+//ç”¨äºæ³¨å†Œå…¨å±€å‡½æ•°
+//æ— å‚
 template<typename Ret>
 class funbinder<Ret(*)()>
 {
@@ -130,7 +130,7 @@ private:
 
 };
 
-//µ¥²Î
+//å•å‚
 template<typename Ret,typename Arg1>
 class funbinder<Ret(*)(Arg1)>
 {
@@ -167,7 +167,7 @@ private:
 
 };
 
-//2²Î
+//2å‚
 template<typename Ret,typename Arg1,typename Arg2>
 class funbinder<Ret(*)(Arg1,Arg2)>
 {
@@ -205,7 +205,7 @@ private:
 	}
 };
 
-//3²Î
+//3å‚
 template<typename Ret,typename Arg1,typename Arg2,typename Arg3>
 class funbinder<Ret(*)(Arg1,Arg2,Arg3)>
 {
@@ -246,7 +246,7 @@ private:
 
 };
 
-//4²Î
+//4å‚
 template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename Arg4>
 class funbinder<Ret(*)(Arg1,Arg2,Arg3,Arg4)>
 {
@@ -294,17 +294,29 @@ void register_function(lua_State *L,const char *name, FUNTOR _func)
 	funbinder<FUNTOR>::pushfuctor(L,name,_func);
 }
 
+inline void check_call(lua_State *L,const char *funname)
+{
+	lua_getglobal(L,funname);
+	if(LUA_TFUNCTION != lua_type(L,-1))
+	{
+		lua_pop(L,1);
+		char str[512];snprintf(str,512,"luaä¸­ä¸å­˜åœ¨å‡½æ•°%s",funname);
+		std::string err(str);
+		throw err;
+	}
+}
+
 template<typename Ret>
 Ret call(const char *funname,lua_State *L)
 {
-	lua_getglobal(L,funname);
+	check_call(L,funname);
 	return doLuaCall<Ret>::doCall(L,0,0);
 }
 
 template<typename Ret,typename Arg1>
 Ret call(const char *funname,lua_State *L,const Arg1 &arg1)
 {
-	lua_getglobal(L,funname);
+	check_call(L,funname);
 	push_obj<Arg1>(L,arg1);
 	return doLuaCall<Ret>::doCall(L,1,0);
 }
@@ -312,7 +324,7 @@ Ret call(const char *funname,lua_State *L,const Arg1 &arg1)
 template<typename Ret,typename Arg1,typename Arg2>
 Ret call(const char *funname,lua_State *L,const Arg1 &arg1,const Arg2 &arg2)
 {
-	lua_getglobal(L,funname);
+	check_call(L,funname);	
 	push_obj<Arg1>(L,arg1);
 	push_obj<Arg2>(L,arg2);
 	return doLuaCall<Ret>::doCall(L,2,0);
@@ -321,7 +333,7 @@ Ret call(const char *funname,lua_State *L,const Arg1 &arg1,const Arg2 &arg2)
 template<typename Ret,typename Arg1,typename Arg2,typename Arg3>
 Ret call(const char *funname,lua_State *L,const Arg1 &arg1,const Arg2 &arg2,const Arg3 &arg3)
 {
-	lua_getglobal(L,funname);
+	check_call(L,funname);
 	push_obj<Arg1>(L,arg1);
 	push_obj<Arg2>(L,arg2);
 	push_obj<Arg3>(L,arg3);
@@ -331,7 +343,7 @@ Ret call(const char *funname,lua_State *L,const Arg1 &arg1,const Arg2 &arg2,cons
 template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename Arg4>
 Ret call(const char *funname,lua_State *L,const Arg1 &arg1,const Arg2 &arg2,const Arg3 &arg3,const Arg4 &arg4)
 {
-	lua_getglobal(L,funname);
+	check_call(L,funname);
 	push_obj<Arg1>(L,arg1);
 	push_obj<Arg2>(L,arg2);
 	push_obj<Arg3>(L,arg3);
