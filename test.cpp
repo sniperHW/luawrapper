@@ -5,7 +5,7 @@ typedef lWrapper::luatable luatable;
 typedef lWrapper::luaObject luaObject;
 #define any_cast lWrapper::any_cast
 
-//²âÊÔÖ±½Óµ÷ÓÃCº¯Êı
+//æµ‹è¯•ç›´æ¥è°ƒç”¨Cå‡½æ•°
 static int showmsg(const char *msg)
 {
 	printf("c-showmsg:%s\n",msg);
@@ -14,7 +14,7 @@ static int showmsg(const char *msg)
 
 void test_call_c_function(lua_State *L)
 {
-	printf("-------²âÊÔµ÷ÓÃCº¯Êı---------\n");
+	printf("-------æµ‹è¯•è°ƒç”¨Cå‡½æ•°---------\n");
 	lWrapper::register_function(L,"cshow",showmsg);
 	try{
 		lWrapper::call<void>("test1",L);
@@ -48,10 +48,10 @@ class test_class_A
 
 void test_class1(lua_State *L)
 {
-	printf("\n-----²âÊÔÏòlua´«µİc++¶ÔÏóÖ¸Õë-----\n");
+	printf("\n-----æµ‹è¯•å‘luaä¼ é€’c++å¯¹è±¡æŒ‡é’ˆ-----\n");
 	lWrapper::register_class<test_class_A>(L,"test_class_A")
-		.constructor<void>()//ÎŞ²Î¹¹Ôì
-		.constructor<const test_class_A&>()//Ò»¸ö²ÎÊı¹¹Ôì
+		.constructor<void>()//æ— å‚æ„é€ 
+		.constructor<const test_class_A&>()//ä¸€ä¸ªå‚æ•°æ„é€ 
 		.property("memb_a",&test_class_A::memb_a)
 		.function("show",&test_class_A::show);
 	
@@ -63,12 +63,12 @@ void test_class1(lua_State *L)
 	{
 		printf("%s\n",err.c_str());
 	}
-	printf("µ÷ÓÃÍêtest2Ö®ºó,a.memb_a:%d\n",a.memb_a);
+	printf("è°ƒç”¨å®Œtest2ä¹‹å,a.memb_a:%d\n",a.memb_a);
 }
 
 void test_pass_luatable(lua_State *L)
 {
-	printf("\n-----²âÊÔÏòlua´«µİluatable-----\n");
+	printf("\n-----æµ‹è¯•å‘luaä¼ é€’luatable-----\n");
 	try{
 		luatable lt;
 		for(int i = 0; i < 10; ++i)
@@ -90,7 +90,7 @@ luatable c_return_luatable()
 
 void test_c_return_luatable(lua_State *L)
 {
-	printf("\n-----²âÊÔÏòlua·µ»Øluatable-----\n");
+	printf("\n-----æµ‹è¯•å‘luaè¿”å›luatable-----\n");
 	lWrapper::register_function(L,"c_return_luatable",c_return_luatable);
 	try{
 		lWrapper::call<void>("test4",L);
@@ -102,7 +102,7 @@ void test_c_return_luatable(lua_State *L)
 
 void test_lua_return_luatable(lua_State *L)
 {
-	printf("\n-----²âÊÔ´Ólua·µ»Øluatable-----\n");
+	printf("\n-----æµ‹è¯•ä»luaè¿”å›luatable-----\n");
 	try{
 		luatable lt = lWrapper::call<luatable>("test5",L);
 		for(int i = 0 ;i < lt.size(); ++i)
@@ -115,7 +115,7 @@ void test_lua_return_luatable(lua_State *L)
 
 void test_op_lua_obj(lua_State *L)
 {
-	printf("\n-----²âÊÔ²Ù×÷lua¶ÔÏó-----\n");
+	printf("\n-----æµ‹è¯•æ“ä½œluaå¯¹è±¡-----\n");
 	try{
 		luaObject lo = lWrapper::call<luaObject>("test6",L);
 		lo.call<void>("show");
@@ -153,7 +153,7 @@ public:
 
 void test_call_virtual_function(lua_State *L)
 {
-	printf("\n-----²âÊÔluaµ÷ÓÃc++¶ÔÏóĞéº¯Êı-----\n");
+	printf("\n-----æµ‹è¯•luaè°ƒç”¨c++å¯¹è±¡è™šå‡½æ•°-----\n");
 	lWrapper::register_class<base>(L,"base")
 		.function("show",&base::show)
 		.function("show2",&base::show2);
@@ -170,7 +170,7 @@ void test_call_virtual_function(lua_State *L)
 
 void test_int64(lua_State *L)
 {
-	printf("\n-----²âÊÔluaÖĞÊ¹ÓÃ64Î»ÕûÊı-----\n");
+	printf("\n-----æµ‹è¯•luaä¸­ä½¿ç”¨64ä½æ•´æ•°-----\n");
 	try{
 		int64_t a = 4294967295;
 		int64_t b = 4294967296;
@@ -183,7 +183,7 @@ void test_int64(lua_State *L)
 
 void test_pass_c_object(lua_State *L)
 {
-	printf("\n-----²âÊÔÏòlua´«µİc++¶ÔÏó-----\n");
+	printf("\n-----æµ‹è¯•å‘luaä¼ é€’c++å¯¹è±¡-----\n");
 	test_class_A a;
 	a.memb_a = 100;
 	try{
@@ -192,7 +192,7 @@ void test_pass_c_object(lua_State *L)
 	{
 		printf("%s\n",err.c_str());
 	}
-	printf("µ÷ÓÃÍêtest9Ö®ºó,a.memb_a:%d\n",a.memb_a);
+	printf("è°ƒç”¨å®Œtest9ä¹‹å,a.memb_a:%d\n",a.memb_a);
 }
 
 void arg_c_object(test_class_A a)
@@ -203,7 +203,7 @@ void arg_c_object(test_class_A a)
 
 void test_call_c_pass_obj(lua_State *L)
 {
-	printf("\n-----²âÊÔluaÏòC++´«µİ¶ÔÏó-----\n");
+	printf("\n-----æµ‹è¯•luaå‘C++ä¼ é€’å¯¹è±¡-----\n");
 	test_class_A a;
 	a.memb_a = 100;
 	lWrapper::register_function(L,"arg_c_object",arg_c_object);
@@ -213,7 +213,7 @@ void test_call_c_pass_obj(lua_State *L)
 	{
 		printf("%s\n",err.c_str());
 	}
-	printf("µ÷ÓÃÍêtest10Ö®ºó,a.memb_a:%d\n",a.memb_a);
+	printf("è°ƒç”¨å®Œtest10ä¹‹å,a.memb_a:%d\n",a.memb_a);
 }
 
 void arg_c_object_ref(test_class_A &a)
@@ -224,7 +224,7 @@ void arg_c_object_ref(test_class_A &a)
 
 void test_call_c_pass_obj_ref(lua_State *L)
 {
-	printf("\n-----²âÊÔluaÏòC++´«µİ¶ÔÏóµÄÒıÓÃ-----\n");
+	printf("\n-----æµ‹è¯•luaå‘C++ä¼ é€’å¯¹è±¡çš„å¼•ç”¨-----\n");
 	test_class_A a;
 	a.memb_a = 100;
 	lWrapper::register_function(L,"arg_c_object_ref",arg_c_object_ref);
@@ -234,18 +234,48 @@ void test_call_c_pass_obj_ref(lua_State *L)
 	{
 		printf("%s\n",err.c_str());
 	}
-	printf("µ÷ÓÃÍêtest11Ö®ºó,a.memb_a:%d\n",a.memb_a);
+	printf("è°ƒç”¨å®Œtest11ä¹‹å,a.memb_a:%d\n",a.memb_a);
 }
 
 void test_create_c_obj(lua_State *L)
 {
-	printf("\n-----²âÊÔluaÖĞ¹¹Ôìc++¶ÔÏó-----\n");
+	printf("\n-----æµ‹è¯•luaä¸­æ„é€ c++å¯¹è±¡-----\n");
 	try{
 		lWrapper::call<void>("test12",L);
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
 	}	
+}
+
+void test_getglobal(lua_State *L)
+{
+	printf("\n-----æµ‹è¯•è·å–luaå…¨å±€å¯¹è±¡-----\n");
+	try{
+		luatable lt = lWrapper::luaGetGlobal<luatable>(L,"t_table");
+		for(int i = 0; i < (int)lt.size();++i)
+		{
+			printf("%d\n",any_cast<int>(lt[i]));
+		}
+	}
+	catch(std::string &err)
+	{
+		printf("%s\n",err.c_str());
+	}
+}
+
+void test_setglobal(lua_State *L)
+{
+	printf("\n-----æµ‹è¯•è®¾ç½®luaå…¨å±€å¯¹è±¡-----\n");
+	try{
+		
+		lWrapper::luaSetGlobal(L,"TEST_GLOBAL","this is test global");
+		lWrapper::call<void>("test13",L);
+	}
+	catch(std::string &err)
+	{
+		printf("%s\n",err.c_str());
+	}
 }
 
 
@@ -266,6 +296,8 @@ int main()
 	test_call_c_pass_obj(lw);
 	test_call_c_pass_obj_ref(lw);
 	test_create_c_obj(lw);
+	test_getglobal(lw);
+	test_setglobal(lw);
 	getchar();
 	return 0;
 }
