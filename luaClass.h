@@ -8,7 +8,7 @@ namespace lWrapper{
 template<typename T>
 void push_obj(lua_State *L,const T &obj);
 
-//È¡³öÕ»¶¥µÄÖµ£¬Í¨Öª½«Æä³öÕ»
+//å–å‡ºæ ˆé¡¶çš„å€¼ï¼Œé€šçŸ¥å°†å…¶å‡ºæ ˆ
 template<typename T>
 T popvalue(lua_State *L);
 class Integer64
@@ -149,9 +149,9 @@ struct memberfield
     memberfield(const memberfield<PARENT> &p):gmv((GMV)p.gmv),smv((SMV)p.smv),mc((MC)p.mc),
 		function(p.function),property(p.property) {}
 
-    typedef void (*GMV)(T *,lua_State*,void *(T::*));//»ñµÃ³ÉÔ±±äÁ¿Öµ
-    typedef void (*SMV)(T *,lua_State*,void *(T::*));//ÉèÖÃ³ÉÔ±±äÁ¿Öµ
-    typedef int (*MC)(lua_State*);//µ÷ÓÃ³ÉÔ±º¯Êı
+    typedef void (*GMV)(T *,lua_State*,void *(T::*));//è·å¾—æˆå‘˜å˜é‡å€¼
+    typedef void (*SMV)(T *,lua_State*,void *(T::*));//è®¾ç½®æˆå‘˜å˜é‡å€¼
+    typedef int (*MC)(lua_State*);//è°ƒç”¨æˆå‘˜å‡½æ•°
     GMV gmv;
     SMV smv;
     MC  mc;
@@ -191,7 +191,7 @@ static void _GetProperty(T *self,lua_State *L,void*(T::*property),Int2Type<true>
 	push_obj<luatable>(L,*lt_ptr);
 }
 
-//»ñÈ¡³ÉÔ±±äÁ¿µÄÖµ
+//è·å–æˆå‘˜å˜é‡çš„å€¼
 template<typename T,typename property_type>
 static void GetProperty(T *self,lua_State *L,void*(T::*property) )
 {
@@ -260,7 +260,7 @@ static void SetProperty(T *self,lua_State *L,void*(T::*property) )
 	Seter<T,property_type> seter(self,L,property);
 }
 
-//ÓÃÓÚÏòlua×¢²áÒ»¸öÀà
+//ç”¨äºå‘luaæ³¨å†Œä¸€ä¸ªç±»
 template<typename T>
 class luaClassWrapper
 {
@@ -304,13 +304,24 @@ class luaClassWrapper
 		
 		static int InsertConstructors(int arg_count,memberfield<T> &mf)
 		{
-			constructors.insert(std::make_pair(arg_count,mf));
-			return (int)constructors.size();
+			if(constructors[arg_count].mc == NULL)
+			{
+				constructors[arg_count] = mf;
+				++constructor_size;
+				return constructor_size;
+			}
+			char str[512];
+			snprintf(str,512,"%sé‡å¤æ³¨å†Œ%dä¸ªå‚æ•°çš„æ„é€ å‡½æ•°",luaRegisterClass<T>::GetClassName(),arg_count);
+			std::string err(str);
+			throw err;
+			//é‡å¤æ³¨å†Œ
+			return -1;
 		}
         
     private:
         static std::map<std::string,memberfield<T> > fields;
-		static std::map<int,memberfield<T> > constructors;
+		static int constructor_size;
+		static memberfield<T> constructors[16];//æ”¯æŒ0-15ä¸ªå‚æ•°çš„æ„é€ å‡½æ•°,æ¯ä¸ªæ•°é‡çš„åªèƒ½æ³¨å†Œä¸€ä¸ª
 };
 
 
@@ -318,7 +329,10 @@ template<typename T>
 std::map<std::string,memberfield<T> > luaClassWrapper<T>::fields;
 
 template<typename T>
-std::map<int,memberfield<T> > luaClassWrapper<T>::constructors;
+int luaClassWrapper<T>::constructor_size = 0;
+
+template<typename T>
+memberfield<T> luaClassWrapper<T>::constructors[16];
 
 extern int NewObj(lua_State *L,const void *ptr,const char *classname);
 
@@ -377,18 +391,21 @@ public:
     static int Construct(lua_State *L)
     {
         int arg_size = lua_gettop(L);
-		typename std::map<int,memberfield<T> >::iterator it = luaClassWrapper<T>::constructors.find(arg_size);
-		if(it != luaClassWrapper<T>::constructors.end())
+		if(arg_size < 16 && luaClassWrapper<T>::constructors[arg_size].mc)
 		{
-			it->second.mc(L);
+			luaClassWrapper<T>::constructors[arg_size].mc(L);
 			luaL_getmetatable(L, "kenny.lualib");
 			lua_pushstring(L,luaRegisterClass<T>::GetClassName());
 			lua_gettable(L,-2);
 			lua_setmetatable(L, -3);
-			lua_pop(L,1);//pop mt kenny.lualib
+			lua_pop(L,1);//pop mt kenny.lualib			
 		}
 		else
-			lua_pushnil(L);
+		{
+			char str[512];
+			snprintf(str,512,"%s:ä¸æ”¯æŒ%dä¸ªå‚æ•°çš„æ„é€ å‡½æ•°",luaRegisterClass<T>::GetClassName(),arg_size);
+			luaL_error(L,str);
+		}			
 		return 1;
     }
 	
@@ -423,7 +440,7 @@ typedef int (*lua_fun)(lua_State*);
 template<typename FUNC>
 class memberfunbinder{};
 
-//ÓÃÓÚ×¢²á³ÉÔ±º¯Êı
+//ç”¨äºæ³¨å†Œæˆå‘˜å‡½æ•°
 template<typename Ret,typename Cla>
 class memberfunbinder<Ret(Cla::*)()>
 {
@@ -821,7 +838,7 @@ private:
 	
 };
 
-//×¢²áÒ»¸öÀà,×î¶àÖ§³Ö¼Ì³Ğ×Ô4¸ö»ùÀà
+//æ³¨å†Œä¸€ä¸ªç±»,æœ€å¤šæ”¯æŒç»§æ‰¿è‡ª4ä¸ªåŸºç±»
 template<typename T,typename Parent1 = void,typename Parent2 = void,typename Parent3 = void,typename Parent4 = void>
 class_def<T> register_class(lua_State *L,const char *name)
 {
