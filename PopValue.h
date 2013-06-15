@@ -52,7 +52,7 @@ inline T _pop(lua_State *L,Int2Type<false>)
 	return _pop_impl<T>(L,Int2Type<IndexOf<SupportType,T>::value >= 0>());
 }
 
-//´ÓluaÕ»ÖĞµ¯³öÕ»¶¥ÔªËØ
+//ä»luaæ ˆä¸­å¼¹å‡ºæ ˆé¡¶å…ƒç´ 
 template<typename T>
 inline T popvalue(lua_State *L)
 {
@@ -168,7 +168,7 @@ inline luatable popvalue(lua_State *L)
 			ret.push_back(popvalue<bool>(L));
 		else if(lua_istable(L,-1))
 		{
-			//»ñÈ¡Ôª±í£¬Èç¹ûÃ»ÓĞÔ­±í¾ÍÊÇ¼òµ¥µÄtable£¬·ñÔòÊÇobject
+			//è·å–å…ƒè¡¨ï¼Œå¦‚æœæ²¡æœ‰åŸè¡¨å°±æ˜¯ç®€å•çš„tableï¼Œå¦åˆ™æ˜¯object
 			if(0 == lua_getmetatable(L,-1))
 				ret.push_back(popvalue<luatable>(L));
 			else
@@ -178,11 +178,19 @@ inline luatable popvalue(lua_State *L)
 			}
 		}
 		else
-			throw std::string("luaº¯Êı·µ»ØÁË²»Ö§³ÖµÄÀàĞÍ");
+			throw std::string("luaå‡½æ•°è¿”å›äº†ä¸æ”¯æŒçš„ç±»å‹");
 	}
 	lua_pop(L,1);
 	return ret;
 }
+
+template<typename T>
+T luaGetGlobal(lua_State *L,const char *name)
+{
+	lua_getglobal(L,name);
+	return popvalue<T>(L);
+}
+
 }
 
 #endif
