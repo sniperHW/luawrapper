@@ -41,4 +41,10 @@ lWrapper::register_class<test_class_A>(L,"test_class_A")
 	.property("memb_a",&test_class_A::memb_a)
 	.function("show",&test_class_A::show);
 	
+--获取lua中全局变量
+luatable lt = lWrapper::luaGetGlobal<luatable>(L,"t_table");
+
+--设置lua中全局变量
+lWrapper::luaSetGlobal(L,"TEST_GLOBAL","this is test global");	
+	
 	
