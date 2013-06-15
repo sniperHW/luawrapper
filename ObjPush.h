@@ -18,7 +18,7 @@
 #define _OBJPUSH_H
 
 namespace lWrapper{
-//µ÷ÓÃluaº¯ÊıÊ±²ÎÊıÑ¹Õ»µÄ³éÏó
+//è°ƒç”¨luaå‡½æ•°æ—¶å‚æ•°å‹æ ˆçš„æŠ½è±¡
 template<typename T>
 class objPush
 {
@@ -44,7 +44,7 @@ private:
 	
 };
 
-//¶ÔÖ¸ÕëÀàĞÍµÄÌØ»¯
+//å¯¹æŒ‡é’ˆç±»å‹çš„ç‰¹åŒ–
 template<typename T>
 class objPush<T*>
 {
@@ -81,7 +81,7 @@ public:
 	}
 };
 
-//×Ö·û´®µÄÌØ»¯
+//å­—ç¬¦ä¸²çš„ç‰¹åŒ–
 template<>
 class objPush<const char *>
 {
@@ -103,7 +103,7 @@ public:
 };
 
 
-//¶Ôint64µÄÌØ»¯³É
+//å¯¹int64çš„ç‰¹åŒ–æˆ
 template<>
 class objPush<int64_t>
 {
@@ -114,7 +114,7 @@ public:
 	}
 };
 
-//¶Ôstd::stringµÄÌØ»¯
+//å¯¹std::stringçš„ç‰¹åŒ–
 template<>
 class objPush<std::string>
 {
@@ -125,7 +125,7 @@ public:
 	}
 };
 
-//Õë¶ÔluaObjectµÄÌØ»¯
+//é’ˆå¯¹luaObjectçš„ç‰¹åŒ–
 template<>
 class objPush<luaObject>
 {
@@ -146,7 +146,7 @@ public:
 	}
 };
 
-//Õë¶ÔluatableµÄÌØ»¯
+//é’ˆå¯¹luatableçš„ç‰¹åŒ–
 template<>
 class objPush<luatable>
 {
@@ -191,7 +191,7 @@ class concrete_any_pusher<T*> : public any_pusher
 public:
 	void push(lua_State *L,any *_any)
 	{
-		//ÊÇ·ñ×¢²áµÄÓÃ»§ÀàĞÍ
+		//æ˜¯å¦æ³¨å†Œçš„ç”¨æˆ·ç±»å‹
 		if(_any->luaRegisterClassName == "")
 			objPush<void*> obj(L,any_cast<void*>(*_any));
 		else
@@ -276,6 +276,45 @@ any_pusher *create_any_pusher()
 {
 	return new concrete_any_pusher<T>;
 }
+
+template<typename T>
+inline void luaSetGlobal(lua_State *L,const char *name,const T &arg)
+{
+	lua_getglobal(L,"_G");
+	if(!lua_istable(L, -1))
+	{
+		lua_pop(L,1);
+		lua_newtable(L);
+		lua_pushvalue(L,-1);
+		lua_setglobal(L,"_G");
+	}
+	lua_pushstring(L,name);
+	objPush<T>(L,arg);
+	lua_settable(L, -3);
+	lua_pop(L,1);
+}
+
+inline void luaSetGlobal(lua_State *L,const char *name,const char *arg)
+{
+	lua_getglobal(L,"_G");
+	if(!lua_istable(L, -1))
+	{
+		lua_pop(L,1);
+		lua_newtable(L);
+		lua_pushvalue(L,-1);
+		lua_setglobal(L,"_G");
+	}
+	lua_pushstring(L,name);
+	lua_pushstring(L,arg);
+	lua_settable(L, -3);
+	lua_pop(L,1);
+}
+
+inline void luaSetGlobal(lua_State *L,const char *name,char *arg)
+{
+	luaSetGlobal(L,name,(const char*)arg);
+}
+
 }
 
 #endif
