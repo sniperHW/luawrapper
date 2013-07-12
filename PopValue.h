@@ -168,13 +168,23 @@ inline luatable popvalue(lua_State *L)
 			ret.push_back(popvalue<bool>(L));
 		else if(lua_istable(L,-1))
 		{
-			//获取元表，如果没有原表就是简单的table，否则是object
-			if(0 == lua_getmetatable(L,-1))
-				ret.push_back(popvalue<luatable>(L));
-			else
+#ifdef _LUAJIT_
+			int _len = lua_objlen(L, -1);//for lua5.1
+#else	
+			int _len = luaL_len(L, -1);//for lua5.2
+#endif		
+			if(_len == 0)
 			{
-				lua_pop(L,1);
-				ret.push_back(popvalue<luaObject>(L));
+				lua_pushnil(L);//push a key
+				if(lua_next(L,-2)){
+					lua_pop(L,2);//pop value and value
+					ret.push_back(popvalue<luaObject>(L));
+				}
+				else{
+					ret.push_back(popvalue<luatable>(L));
+				}
+			}else{
+				ret.push_back(popvalue<luatable>(L));
 			}
 		}
 		else
