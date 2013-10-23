@@ -233,10 +233,10 @@ inline std::string any_cast(const any & operand)
 
 //unsupported
 template<>
-inline const char * any_cast(const any & operand);
+const char * any_cast(const any & operand);
 
 template<>
-inline char * any_cast(const any & operand);
+char * any_cast(const any & operand);
 
 }
 #endif
