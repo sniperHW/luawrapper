@@ -294,7 +294,8 @@ inline void luaSetGlobal(lua_State *L,const char *name,const T &arg)
 	lua_pop(L,1);
 }
 
-inline void luaSetGlobal(lua_State *L,const char *name,const char *arg)
+//set lua global object
+inline void Set(lua_State *L,const char *name,const char *arg)
 {
 	lua_getglobal(L,"_G");
 	if(!lua_istable(L, -1))

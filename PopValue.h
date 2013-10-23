@@ -194,8 +194,9 @@ inline luatable popvalue(lua_State *L)
 	return ret;
 }
 
+//Get lua global object
 template<typename T>
-T luaGetGlobal(lua_State *L,const char *name)
+T Get(lua_State *L,const char *name)
 {
 	lua_getglobal(L,name);
 	return popvalue<T>(L);

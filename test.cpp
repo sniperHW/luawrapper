@@ -252,7 +252,7 @@ void test_getglobal(lua_State *L)
 {
 	printf("\n-----lua global objcet-----\n");
 	try{
-		luatable lt = lWrapper::luaGetGlobal<luatable>(L,"t_table");
+		luatable lt = lWrapper::Get<luatable>(L,"t_table");
 		for(int i = 0; i < (int)lt.size();++i)
 		{
 			printf("%d\n",any_cast<int>(lt[i]));
@@ -269,7 +269,7 @@ void test_setglobal(lua_State *L)
 	printf("\n-----lua global object-----\n");
 	try{
 		
-		lWrapper::luaSetGlobal(L,"TEST_GLOBAL","this is test global");
+		lWrapper::Set(L,"TEST_GLOBAL","this is test global");
 		lWrapper::call<void>("test13",L);
 	}
 	catch(std::string &err)
