@@ -52,7 +52,7 @@ inline T _pop(lua_State *L,Int2Type<false>)
 	return _pop_impl<T>(L,Int2Type<IndexOf<SupportType,T>::value >= 0>());
 }
 
-//从lua栈中弹出栈顶元素
+//�lua�ջ�е���ջ��Ԫ�
 template<typename T>
 inline T popvalue(lua_State *L)
 {
@@ -103,7 +103,7 @@ inline void *popvalue(lua_State *L)
 template<>
 inline bool popvalue(lua_State *L)
 {
-	bool ret = (bool)lua_toboolean(L,-1);
+	bool ret = lua_toboolean(L,-1) == 1;
 	lua_pop(L,1);
 	return ret;
 }
@@ -188,7 +188,7 @@ inline luatable popvalue(lua_State *L)
 			}
 		}
 		else
-			throw std::string("lua函数返回了不支持的类型");
+			throw std::string("error");
 	}
 	lua_pop(L,1);
 	return ret;

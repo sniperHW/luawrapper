@@ -48,7 +48,7 @@ int newI64(lua_State *L)
 		lua_pushlightuserdata(L,tmp);
 	else
 	{
-		long initval = lua_tonumber(L,2);
+		long initval = (long)lua_tonumber(L,2);
 		size_t nbytes = sizeof(Integer64);
 		void *buf = lua_newuserdata(L, nbytes);
 		new(buf)Integer64(initval);

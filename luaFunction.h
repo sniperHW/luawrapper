@@ -134,6 +134,8 @@ private:
 template<typename Ret,typename Arg1>
 class funbinder<Ret(*)(Arg1)>
 {
+private:
+	typedef typename refTraits<Arg1>::RefType arg1_ref_type;
 public:
 
 	static void pushfuctor(lua_State *L,const char *name,Ret(*_func)(Arg1))
@@ -151,6 +153,7 @@ public:
 
 private:
 	typedef Ret(*__func)(Arg1);
+	
 
 	template<typename Result> 
 	static int doCall(lua_State *L,const Arg1 &arg1,__func func,Int2Type<false>)
@@ -300,7 +303,12 @@ inline void check_call(lua_State *L,const char *funname)
 	if(LUA_TFUNCTION != lua_type(L,-1))
 	{
 		lua_pop(L,1);
-		char str[512];snprintf(str,512,"lua中不存在函数%s",funname);
+		char str[512];
+#ifdef _VC
+		_snprintf(str,512,"lua中不存在函数%s",funname);
+#else
+		snprintf(str,512,"lua中不存在函数%s",funname);
+#endif
 		std::string err(str);
 		throw err;
 	}

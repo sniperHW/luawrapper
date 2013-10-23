@@ -207,7 +207,7 @@ public: // representation (public so any_cast can be non-friend)
 template<typename ValueType>
 inline ValueType _any_cast(const any &operand,Int2Type<true>)
 {
-	ValueType ret = static_cast<any::holder<int64_t> *>(operand.content)->held;
+	ValueType ret = (ValueType)static_cast<any::holder<int64_t> *>(operand.content)->held;
 	return ret;
 }
 
@@ -229,5 +229,14 @@ inline std::string any_cast(const any & operand)
 	any::holder<std::string> *tmp = static_cast<any::holder<std::string> *>(operand.content);
 	return tmp->held;
 }
+
+
+//unsupported
+template<>
+inline const char * any_cast(const any & operand);
+
+template<>
+inline char * any_cast(const any & operand);
+
 }
 #endif

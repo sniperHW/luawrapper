@@ -8,7 +8,7 @@ namespace lWrapper{
 template<typename T>
 void push_obj(lua_State *L,const T &obj);
 
-//取出栈顶的值，通知将其出栈
+//ȡ��ջ����ֵ��֪ͨ�����ջ
 template<typename T>
 T popvalue(lua_State *L);
 class Integer64
@@ -65,12 +65,12 @@ public:
 	Integer64 tmp(0);\
 	if(!i64other)\
 	{\
-		tmp.m_val = lua_tonumber(L,2);\
+		tmp.m_val = (int64_t)lua_tonumber(L,2);\
 		i64other = &tmp;\
 	}\
 	if(!i64self)\
 	{\
-		long num = lua_tonumber(L,1);\
+		long num = (long)lua_tonumber(L,1);\
 		size_t nbytes = sizeof(Integer64);\
 		i64self = (Integer64*)lua_newuserdata(L, nbytes);\
 		new(i64self)Integer64(num);\
@@ -149,9 +149,9 @@ struct memberfield
     memberfield(const memberfield<PARENT> &p):gmv((GMV)p.gmv),smv((SMV)p.smv),mc((MC)p.mc),
 		function(p.function),property(p.property) {}
 
-    typedef void (*GMV)(T *,lua_State*,void *(T::*));//获得成员变量值
-    typedef void (*SMV)(T *,lua_State*,void *(T::*));//设置成员变量值
-    typedef int (*MC)(lua_State*);//调用成员函数
+    typedef void (*GMV)(T *,lua_State*,void *(T::*));//��ó�Ա���ֵ
+    typedef void (*SMV)(T *,lua_State*,void *(T::*));//���ó�Ա���ֵ
+    typedef int (*MC)(lua_State*);//���ó�Ա���
     GMV gmv;
     SMV smv;
     MC  mc;
@@ -191,7 +191,7 @@ static void _GetProperty(T *self,lua_State *L,void*(T::*property),Int2Type<true>
 	push_obj<luatable>(L,*lt_ptr);
 }
 
-//获取成员变量的值
+//��ȡ��Ա�����ֵ
 template<typename T,typename property_type>
 static void GetProperty(T *self,lua_State *L,void*(T::*property) )
 {
@@ -260,7 +260,7 @@ static void SetProperty(T *self,lua_State *L,void*(T::*property) )
 	Seter<T,property_type> seter(self,L,property);
 }
 
-//用于向lua注册一个类
+//�����lua�ע��һ���
 template<typename T>
 class luaClassWrapper
 {
@@ -310,18 +310,18 @@ class luaClassWrapper
 				++constructor_size;
 				return constructor_size;
 			}
-			char str[512];
-			snprintf(str,512,"%s重复注册%d个参数的构造函数",luaRegisterClass<T>::GetClassName(),arg_count);
-			std::string err(str);
-			throw err;
-			//重复注册
+			//char str[512];
+			//snprintf(str,512,"%s��ظ�ע�%d�����Ĺ��캯�",luaRegisterClass<T>::GetClassName(),arg_count);
+			//std::string err(str);
+			//throw err;
+			//��ظ�ע�
 			return -1;
 		}
         
     private:
         static std::map<std::string,memberfield<T> > fields;
 		static int constructor_size;
-		static memberfield<T> constructors[16];//支持0-15个参数的构造函数,每个数量的只能注册一个
+		static memberfield<T> constructors[16];//�֧�0-15ָ����Ĺ��캯�,�ÿ�������ֻ��ע��һ�
 };
 
 
@@ -403,7 +403,11 @@ public:
 		else
 		{
 			char str[512];
-			snprintf(str,512,"%s:不支持%d个参数的构造函数",luaRegisterClass<T>::GetClassName(),arg_size);
+#ifdef _VC
+			_snprintf(str,512,"%s: unsupport %d arguments constructor\n",luaRegisterClass<T>::GetClassName(),arg_size);
+#else
+			snprintf(str,512,"%s: unsupport %d arguments constructor\n",luaRegisterClass<T>::GetClassName(),arg_size);
+#endif			
 			luaL_error(L,str);
 		}			
 		return 1;
@@ -440,7 +444,7 @@ typedef int (*lua_fun)(lua_State*);
 template<typename FUNC>
 class memberfunbinder{};
 
-//用于注册成员函数
+//�����ע���Ա���
 template<typename Ret,typename Cla>
 class memberfunbinder<Ret(Cla::*)()>
 {
@@ -838,18 +842,24 @@ private:
 	
 };
 
-//注册一个类,最多支持继承自4个基类
+
+
+//�ע��һ���,����֧�ּ̳��4Ը���
 template<typename T,typename Parent1 = void,typename Parent2 = void,typename Parent3 = void,typename Parent4 = void>
-class_def<T> register_class(lua_State *L,const char *name)
+struct register_class
 {
-    luaRegisterClass<T>::SetClassName(name);
-    luaClassWrapper<T>::luaopen_objlib(L);
-    luaRegisterClass<T>::SetRegister();
-	DefParent<Parent1,T>(Int2Type<isVoid<Parent1>::is_Void>());
-	DefParent<Parent2,T>(Int2Type<isVoid<Parent2>::is_Void>());
-	DefParent<Parent3,T>(Int2Type<isVoid<Parent3>::is_Void>());
-	DefParent<Parent4,T>(Int2Type<isVoid<Parent4>::is_Void>());
-	return class_def<T>(L);
-}
+	static class_def<T> _register(lua_State *L,const char *name)
+	{
+		luaRegisterClass<T>::SetClassName(name);
+		luaClassWrapper<T>::luaopen_objlib(L);
+		luaRegisterClass<T>::SetRegister();
+		DefParent<Parent1,T>(Int2Type<isVoid<Parent1>::is_Void>());
+		DefParent<Parent2,T>(Int2Type<isVoid<Parent2>::is_Void>());
+		DefParent<Parent3,T>(Int2Type<isVoid<Parent3>::is_Void>());
+		DefParent<Parent4,T>(Int2Type<isVoid<Parent4>::is_Void>());
+		return class_def<T>(L);
+	}
+};
+
 }
 #endif
