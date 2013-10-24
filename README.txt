@@ -7,10 +7,10 @@ static int showmsg(const char *msg)
 	printf("c-showmsg:%s\n",msg);
 	return 0;
 }
-lWrapper::register_function(L,"cshow",showmsg);
+luacpp::register_function(L,"cshow",showmsg);
 
 ---调用lua函数
-lWrapper::call<void>("test1",L);
+luacpp::call<void>("test1",L);
 
 --注册c++类型
 class test_class_A
@@ -35,16 +35,106 @@ class test_class_A
 		}
 };
 
-lWrapper::register_class<test_class_A>(L,"test_class_A")
+luacpp::register_class<test_class_A>(L,"test_class_A")
 	.constructor<void>()//无参构造
 	.constructor<const test_class_A&>()//一个参数构造
 	.property("memb_a",&test_class_A::memb_a)
 	.function("show",&test_class_A::show);
 	
 --获取lua中全局变量
-luatable lt = lWrapper::luaGetGlobal<luatable>(L,"t_table");
+luatable lt = luacpp::Get<luatable>(L,"t_table");
 
 --设置lua中全局变量
-lWrapper::luaSetGlobal(L,"TEST_GLOBAL","this is test global");	
+luacpp::Set(L,"TEST_GLOBAL","this is test global");
+
+
+--访问lua中的Object
+
+--lua code
+Account = {
+	balance = 10,
+	names=0,
+	[1] = 1,
+	[2.2] = 2.2,
+}
+    
+function Account:withdraw (v)
+      self.balance = self.balance - v
+end
+    
+function Account:new (o)
+  o = o or {}   
+  setmetatable(o, self)
+  self.__index = self
+  return o
+end
+
+function Account:show()
+	print("this is account show")
+end
+
+function Account:getBalance()
+	return self.balance
+end
+
+function Account:setBalance(val)
+	self.balance = val
+end
+
+function GetAccount()
+	return Account:new()
+end
+
+
+--C++ code
+luaObject lo = luacpp::call<luaObject>("GetAccount",L);
+lo.call<void>("show");
+printf("balance:%d\n",lo.Get<int>("balance"));
+lo.Set("balance",1000);
+printf("balance:%d\n",lo.Get<int>("balance"));
+printf("1:%d\n",lo.Get<int>(1));
+printf("2:%f\n",lo.Get<double>(2.2));
+
+
+--访问数组形式的lua表
+--从lua返回
+
+--lua code 
+function get_lua_array()
+	return {"a","b","c","d","e","f"}
+end
+
+
+--C++ code
+
+luatable lt = luacpp::call<luatable>("get_lua_array",L);
+for(int i = 0 ;i < (int)lt.size(); ++i)
+	printf("%s\n",any_cast<std::string>(lt[i]).c_str());
+	
+
+--传递到lua
+--C++ code
+
+luatable lt;
+lt.push_back(1);
+lt.push_back(2);
+lt.push_back(3);
+luacpp::call<void>("pass_luatable",L,lt);
+
+
+--lua code 
+function pass_luatable(lt)
+	print(lt[1])
+	print(lt[2])
+	print(lt[3])
+end
+
+	
+	
+	
+
+
+
+	
 	
 	
