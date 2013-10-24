@@ -26,7 +26,7 @@
 		lua_rawgeti(L,LUA_REGISTRYINDEX,index);\
 	}
 
-namespace lWrapper{
+namespace luacpp{
 	
 template<typename T>
 T popvalue(lua_State *L);	
@@ -39,8 +39,7 @@ class luaObject
 {
 public:
 	luaObject(lua_State *lState,int index)
-		:m_iKeyIndex(index),m_plState(lState)
-		{
+		:m_iKeyIndex(index),m_plState(lState){
 			counter = new int(1);
 		}
 
@@ -94,24 +93,23 @@ public:
 		}
 	}
 
-	//获得类的成员变量
-	template<typename T>
-	T Get(const char *name)
+
+	template<typename RET,typename KEY>
+	RET Get(KEY key)
 	{
 		lua_rawgeti(m_plState,LUA_REGISTRYINDEX,m_iKeyIndex);
-		lua_pushstring(m_plState,name);
+		push_obj<KEY>(m_plState,key);
 		lua_gettable(m_plState,-2);
-		T ret = popvalue<T>(m_plState);
+		RET ret = popvalue<RET>(m_plState);
 		lua_pop(m_plState,1);//pop the table
 		return ret;
 	}
 
-	//设置成员变量 
-	template<typename T>
-	void Set(const char *name,T value)
+	template<typename T,typename KEY>
+	void Set(KEY key,T value)
 	{
 		lua_rawgeti(m_plState,LUA_REGISTRYINDEX,m_iKeyIndex);
-		lua_pushstring(m_plState,name);
+		push_obj<KEY>(m_plState,key);
 		push_obj<T>(m_plState,value);
 		lua_settable(m_plState,-3);
 		lua_pop(m_plState,1);
@@ -162,18 +160,15 @@ public:
 		return doLuaCall<Ret>::doCall(m_plState,5,0,true);
 	}
 
-	lua_State *getState() const 
-	{
+	lua_State *getState() const {
 		return m_plState;
 	}
 
-	int getIndex() const 
-	{
+	int getIndex() const {
 		return m_iKeyIndex;
 	}
 	
-	bool isNULL() const
-	{
+	bool isNULL() const{
 		return m_iKeyIndex <= 0;
 	}
 

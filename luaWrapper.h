@@ -28,7 +28,7 @@
 #include "PopValue.h"
 #include "ObjPush.h"
 
-namespace lWrapper{
+namespace luacpp{
 
 class luaWrapper
 {

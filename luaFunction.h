@@ -25,7 +25,7 @@
 #include <iostream>
 #include <vector>
 
-namespace lWrapper{
+namespace luacpp{
 template<typename T>
 void push_obj(lua_State *L,const T &obj);
 

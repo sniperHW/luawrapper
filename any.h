@@ -25,7 +25,7 @@
 #include "Trait.h"
 #include "luacommon.h"
 
-namespace lWrapper{
+namespace luacpp{
 
 class luaObject;
 class any;

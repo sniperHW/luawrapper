@@ -16,7 +16,7 @@
 */	
 #ifndef _POPVALUE_H
 #define _POPVALUE_H
-namespace lWrapper{
+namespace luacpp{
 
 template<typename T>
 inline T _pop(lua_State *L,Int2Type<true>)
@@ -52,7 +52,6 @@ inline T _pop(lua_State *L,Int2Type<false>)
 	return _pop_impl<T>(L,Int2Type<IndexOf<SupportType,T>::value >= 0>());
 }
 
-//�lua�ջ�е���ջ��Ԫ�
 template<typename T>
 inline T popvalue(lua_State *L)
 {
@@ -135,7 +134,7 @@ template<>
 inline luatable popvalue(lua_State *L)
 {
 	luatable ret;
-#ifdef _LUAJIT_
+#ifdef _LUA51_
 	int len = lua_objlen(L, -1);//for lua5.1
 #else	
 	int len = luaL_len(L, -1);//for lua5.2
@@ -168,7 +167,7 @@ inline luatable popvalue(lua_State *L)
 			ret.push_back(popvalue<bool>(L));
 		else if(lua_istable(L,-1))
 		{
-#ifdef _LUAJIT_
+#ifdef _LUA51_
 			int _len = lua_objlen(L, -1);//for lua5.1
 #else	
 			int _len = luaL_len(L, -1);//for lua5.2

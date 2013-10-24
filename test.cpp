@@ -1,9 +1,9 @@
 #include "luaWrapper.h"
 #include <stdio.h>
 
-typedef lWrapper::luatable luatable;
-typedef lWrapper::luaObject luaObject;
-#define any_cast lWrapper::any_cast
+typedef luacpp::luatable luatable;
+typedef luacpp::luaObject luaObject;
+#define any_cast luacpp::any_cast
 
 //测试直接调用C函数
 static int showmsg(const char *msg)
@@ -15,9 +15,9 @@ static int showmsg(const char *msg)
 void test_call_c_function(lua_State *L)
 {
 	printf("-------call c function---------\n");
-	lWrapper::register_function(L,"cshow",showmsg);
+	luacpp::register_function(L,"cshow",showmsg);
 	try{
-		lWrapper::call<void>("test1",L);
+		luacpp::call<void>("test1",L);
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -49,7 +49,7 @@ class test_class_A
 void test_class1(lua_State *L)
 {
 	printf("\n-----pass a c++ pointer to lua-----\n");
-	lWrapper::register_class<test_class_A>::_register(L,"test_class_A")
+	luacpp::register_class<test_class_A>::_register(L,"test_class_A")
 		.constructor<void>()//无参构造
 		.constructor<const test_class_A&>()//一个参数构造
 		.property("memb_a",&test_class_A::memb_a)
@@ -58,7 +58,7 @@ void test_class1(lua_State *L)
 	test_class_A a;
 	a.memb_a = 100;
 	try{
-		lWrapper::call<void>("test2",L,&a);
+		luacpp::call<void>("test2",L,&a);
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -73,7 +73,7 @@ void test_pass_luatable(lua_State *L)
 		luatable lt;
 		for(int i = 0; i < 10; ++i)
 			lt.push_back(i);
-		lWrapper::call<void>("test3",L,lt);
+		luacpp::call<void>("test3",L,lt);
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -91,9 +91,9 @@ luatable c_return_luatable()
 void test_c_return_luatable(lua_State *L)
 {
 	printf("\n-----C++ return a luatable to lua-----\n");
-	lWrapper::register_function(L,"c_return_luatable",c_return_luatable);
+	luacpp::register_function(L,"c_return_luatable",c_return_luatable);
 	try{
-		lWrapper::call<void>("test4",L);
+		luacpp::call<void>("test4",L);
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -104,7 +104,7 @@ void test_lua_return_luatable(lua_State *L)
 {
 	printf("\n-----lua return a luatable to C++-----\n");
 	try{
-		luatable lt = lWrapper::call<luatable>("test5",L);
+		luatable lt = luacpp::call<luatable>("test5",L);
 		for(int i = 0 ;i < (int)lt.size(); ++i)
 			printf("%s\n",any_cast<std::string>(lt[i]).c_str());
 	}catch(std::string &err)
@@ -117,11 +117,13 @@ void test_op_lua_obj(lua_State *L)
 {
 	printf("\n----- operate lua object -----\n");
 	try{
-		luaObject lo = lWrapper::call<luaObject>("test6",L);
+		luaObject lo = luacpp::call<luaObject>("test6",L);
 		lo.call<void>("show");
 		printf("balance:%d\n",lo.Get<int>("balance"));
 		lo.Set("balance",1000);
-		printf("balance:%d\n",lo.Get<int>("balance"));		
+		printf("balance:%d\n",lo.Get<int>("balance"));
+		printf("1:%d\n",lo.Get<int>(1));
+		printf("2:%f\n",lo.Get<double>(2.2));
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -154,14 +156,14 @@ public:
 void test_call_virtual_function(lua_State *L)
 {
 	printf("\n----- lua call C++ virtual function -----\n");
-	lWrapper::register_class<base>::_register(L,"base")
+	luacpp::register_class<base>::_register(L,"base")
 		.function("show",&base::show)
 		.function("show2",&base::show2);
-	lWrapper::register_class<child,base>::_register(L,"child");
+	luacpp::register_class<child,base>::_register(L,"child");
 	child c;
 	base *b = &c;
 	try{
-		lWrapper::call<void>("test7",L,b,&c);	
+		luacpp::call<void>("test7",L,b,&c);	
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -174,7 +176,7 @@ void test_int64(lua_State *L)
 	try{
 		int64_t a = 4294967295;
 		int64_t b = 4294967296;
-		lWrapper::call<void>("test8",L,a,b);	
+		luacpp::call<void>("test8",L,a,b);	
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -187,7 +189,7 @@ void test_pass_c_object(lua_State *L)
 	test_class_A a;
 	a.memb_a = 100;
 	try{
-		lWrapper::call<void>("test9",L,a);
+		luacpp::call<void>("test9",L,a);
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -206,9 +208,9 @@ void test_call_c_pass_obj(lua_State *L)
 	printf("\n-----pass a C++ reference to lua-----\n");
 	test_class_A a;
 	a.memb_a = 100;
-	lWrapper::register_function(L,"arg_c_object",arg_c_object);
+	luacpp::register_function(L,"arg_c_object",arg_c_object);
 	try{
-		lWrapper::call<void>("test10",L,a);
+		luacpp::call<void>("test10",L,a);
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -227,9 +229,9 @@ void test_call_c_pass_obj_ref(lua_State *L)
 	printf("\n-----pass a C++ reference to lua-----\n");
 	test_class_A a;
 	a.memb_a = 100;
-	lWrapper::register_function(L,"arg_c_object_ref",arg_c_object_ref);
+	luacpp::register_function(L,"arg_c_object_ref",arg_c_object_ref);
 	try{
-		lWrapper::call<void>("test11",L,a);
+		luacpp::call<void>("test11",L,a);
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -241,7 +243,7 @@ void test_create_c_obj(lua_State *L)
 {
 	printf("\n-----construct C++ object in lua-----\n");
 	try{
-		lWrapper::call<void>("test12",L);
+		luacpp::call<void>("test12",L);
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -252,7 +254,7 @@ void test_getglobal(lua_State *L)
 {
 	printf("\n-----lua global objcet-----\n");
 	try{
-		luatable lt = lWrapper::Get<luatable>(L,"t_table");
+		luatable lt = luacpp::Get<luatable>(L,"t_table");
 		for(int i = 0; i < (int)lt.size();++i)
 		{
 			printf("%d\n",any_cast<int>(lt[i]));
@@ -269,8 +271,8 @@ void test_setglobal(lua_State *L)
 	printf("\n-----lua global object-----\n");
 	try{
 		
-		lWrapper::Set(L,"TEST_GLOBAL","this is test global");
-		lWrapper::call<void>("test13",L);
+		luacpp::Set(L,"TEST_GLOBAL","this is test global");
+		luacpp::call<void>("test13",L);
 	}
 	catch(std::string &err)
 	{
@@ -282,7 +284,7 @@ void test_setglobal(lua_State *L)
 
 int main()
 {
-	lWrapper::luaWrapper lw;
+	luacpp::luaWrapper lw;
 	lw.dofile("start.lua");
 	test_call_c_function(lw);
 	test_class1(lw);

@@ -1,6 +1,8 @@
 Account = {
 balance = 10,
 names=0,
+[1] = 1,
+[2.2] = 2.2,
 }
     
 

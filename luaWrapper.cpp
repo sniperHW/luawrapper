@@ -1,6 +1,6 @@
 #include "luaWrapper.h"
 #include <stdlib.h>
-namespace lWrapper{
+namespace luacpp{
 bool luaWrapper::dofile(const char *filename)
 {
     if (luaL_dofile(lState, filename)) {

@@ -4,7 +4,7 @@
 #include "luaObject.h"
 #include "any.h"
 #include <string.h>
-namespace lWrapper{
+namespace luacpp{
 template<typename T>
 void push_obj(lua_State *L,const T &obj);
 
@@ -149,9 +149,9 @@ struct memberfield
     memberfield(const memberfield<PARENT> &p):gmv((GMV)p.gmv),smv((SMV)p.smv),mc((MC)p.mc),
 		function(p.function),property(p.property) {}
 
-    typedef void (*GMV)(T *,lua_State*,void *(T::*));//��ó�Ա���ֵ
-    typedef void (*SMV)(T *,lua_State*,void *(T::*));//���ó�Ա���ֵ
-    typedef int (*MC)(lua_State*);//���ó�Ա���
+    typedef void (*GMV)(T *,lua_State*,void *(T::*));
+    typedef void (*SMV)(T *,lua_State*,void *(T::*));
+    typedef int (*MC)(lua_State*);
     GMV gmv;
     SMV smv;
     MC  mc;
@@ -260,7 +260,6 @@ static void SetProperty(T *self,lua_State *L,void*(T::*property) )
 	Seter<T,property_type> seter(self,L,property);
 }
 
-//�����lua�ע��һ���
 template<typename T>
 class luaClassWrapper
 {
@@ -310,18 +309,13 @@ class luaClassWrapper
 				++constructor_size;
 				return constructor_size;
 			}
-			//char str[512];
-			//snprintf(str,512,"%s��ظ�ע�%d�����Ĺ��캯�",luaRegisterClass<T>::GetClassName(),arg_count);
-			//std::string err(str);
-			//throw err;
-			//��ظ�ע�
 			return -1;
 		}
         
     private:
         static std::map<std::string,memberfield<T> > fields;
 		static int constructor_size;
-		static memberfield<T> constructors[16];//�֧�0-15ָ����Ĺ��캯�,�ÿ�������ֻ��ע��һ�
+		static memberfield<T> constructors[16];
 };
 
 
@@ -352,7 +346,7 @@ public:
 
     static int NewObj(lua_State *L,const T *ptr) 
     {
-        return lWrapper::NewObj(L,ptr,luaRegisterClass<T>::GetClassName());
+        return luacpp::NewObj(L,ptr,luaRegisterClass<T>::GetClassName());
     }
 
     static int NewIndex(lua_State *L)
@@ -444,7 +438,6 @@ typedef int (*lua_fun)(lua_State*);
 template<typename FUNC>
 class memberfunbinder{};
 
-//�����ע���Ա���
 template<typename Ret,typename Cla>
 class memberfunbinder<Ret(Cla::*)()>
 {
@@ -842,9 +835,6 @@ private:
 	
 };
 
-
-
-//�ע��һ���,����֧�ּ̳��4Ը���
 template<typename T,typename Parent1 = void,typename Parent2 = void,typename Parent3 = void,typename Parent4 = void>
 struct register_class
 {
