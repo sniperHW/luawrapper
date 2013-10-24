@@ -1,4 +1,4 @@
-/*	
+/*
     Copyright (C) <2012>  <huangweilook@21cn.com>
 
     This program is free software: you can redistribute it and/or modify
@@ -13,7 +13,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/	
+*/
 /*
 * brief : 注册全局函数
 * Author : huangwei
@@ -56,7 +56,7 @@ private:
 		if(callByObject)
 			lua_pop(L,1);
 	}
-	
+
 	//有返回值
 	static Ret call(lua_State *L,int nArgs,int errFunc,Int2Type<false>,bool callByObject)
 	{
@@ -113,15 +113,15 @@ public:
 private:
 
 	typedef Ret(*__func)();
-	
-	template<typename Result> 
+
+	template<typename Result>
 	static int doCall(lua_State *L,__func func,Int2Type<false>)
 	{
 		push_obj<Result>(L,func());
 		return 1;
 	}
 
-	template<typename Result> 
+	template<typename Result>
 	static int doCall(lua_State *L,__func func,Int2Type<true>)
 	{
 		func();
@@ -153,15 +153,15 @@ public:
 
 private:
 	typedef Ret(*__func)(Arg1);
-	
 
-	template<typename Result> 
+
+	template<typename Result>
 	static int doCall(lua_State *L,const Arg1 &arg1,__func func,Int2Type<false>)
 	{
 		push_obj<Result>(L,func(arg1));
 		return 1;
 	}
-	template<typename Result> 
+	template<typename Result>
 	static int doCall(lua_State *L,const Arg1 &arg1,__func func,Int2Type<true>)
 	{
 		func(arg1);
@@ -193,14 +193,14 @@ public:
 private:
 	typedef Ret(*__func)(Arg1,Arg2);
 
-	template<typename Result> 
+	template<typename Result>
 	static int doCall(lua_State *L,const Arg1 &arg1,const Arg2 &arg2,__func func,Int2Type<false>)
 	{
 		push_obj<Result>(L,func(arg1,arg2));
 		return 1;
 	}
 
-	template<typename Result> 
+	template<typename Result>
 	static int doCall(lua_State *L,const Arg1 &arg1,const Arg2 &arg2,__func func,Int2Type<true>)
 	{
 		func(arg1,arg2);
@@ -233,14 +233,14 @@ public:
 private:
 	typedef Ret(*__func)(Arg1,Arg2,Arg3);
 
-	template<typename Result> 
+	template<typename Result>
 	static int doCall(lua_State *L,const Arg1 &arg1,const Arg2 &arg2,const Arg3 &arg3,__func func,Int2Type<false>)
 	{
 		push_obj<Result>(L,func(arg1,arg2,arg3));
 		return 1;
 	}
 
-	template<typename Result> 
+	template<typename Result>
 	static int doCall(lua_State *L,const Arg1 &arg1,const Arg2 &arg2,const Arg3 &arg3,__func func,Int2Type<true>)
 	{
 		func(arg1,arg2,arg3);
@@ -275,7 +275,7 @@ public:
 
 private:
 	typedef Ret(*__func)(Arg1,Arg2,Arg3,Arg4);
-	template<typename Result> 
+	template<typename Result>
 	static int doCall(lua_State *L,const Arg1 &arg1,const Arg2 &arg2,const Arg3 &arg3,const Arg4 &arg4,__func func,Int2Type<false>)
 	{
 		push_obj<Result>(L,func(arg1,arg2,arg3,arg4));
@@ -292,7 +292,7 @@ private:
 
 
 template<typename FUNTOR>
-void register_function(lua_State *L,const char *name, FUNTOR _func)
+void reg_cfun(lua_State *L,const char *name, FUNTOR _func)
 {
 	funbinder<FUNTOR>::pushfuctor(L,name,_func);
 }
@@ -315,14 +315,14 @@ inline void check_call(lua_State *L,const char *funname)
 }
 
 template<typename Ret>
-Ret call(const char *funname,lua_State *L)
+Ret call(lua_State *L,const char *funname)
 {
 	check_call(L,funname);
 	return doLuaCall<Ret>::doCall(L,0,0);
 }
 
 template<typename Ret,typename Arg1>
-Ret call(const char *funname,lua_State *L,const Arg1 &arg1)
+Ret call(lua_State *L,const char *funname,const Arg1 &arg1)
 {
 	check_call(L,funname);
 	push_obj<Arg1>(L,arg1);
@@ -330,16 +330,16 @@ Ret call(const char *funname,lua_State *L,const Arg1 &arg1)
 }
 
 template<typename Ret,typename Arg1,typename Arg2>
-Ret call(const char *funname,lua_State *L,const Arg1 &arg1,const Arg2 &arg2)
+Ret call(lua_State *L,const char *funname,const Arg1 &arg1,const Arg2 &arg2)
 {
-	check_call(L,funname);	
+	check_call(L,funname);
 	push_obj<Arg1>(L,arg1);
 	push_obj<Arg2>(L,arg2);
 	return doLuaCall<Ret>::doCall(L,2,0);
 }
 
 template<typename Ret,typename Arg1,typename Arg2,typename Arg3>
-Ret call(const char *funname,lua_State *L,const Arg1 &arg1,const Arg2 &arg2,const Arg3 &arg3)
+Ret call(lua_State *L,const char *funname,const Arg1 &arg1,const Arg2 &arg2,const Arg3 &arg3)
 {
 	check_call(L,funname);
 	push_obj<Arg1>(L,arg1);
@@ -349,7 +349,7 @@ Ret call(const char *funname,lua_State *L,const Arg1 &arg1,const Arg2 &arg2,cons
 }
 
 template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename Arg4>
-Ret call(const char *funname,lua_State *L,const Arg1 &arg1,const Arg2 &arg2,const Arg3 &arg3,const Arg4 &arg4)
+Ret call(lua_State *L,const char *funname,const Arg1 &arg1,const Arg2 &arg2,const Arg3 &arg3,const Arg4 &arg4)
 {
 	check_call(L,funname);
 	push_obj<Arg1>(L,arg1);
@@ -359,4 +359,4 @@ Ret call(const char *funname,lua_State *L,const Arg1 &arg1,const Arg2 &arg2,cons
 	return doLuaCall<Ret>::doCall(L,4,0);
 }
 }
-#endif 
+#endif
