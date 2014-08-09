@@ -142,13 +142,13 @@ inline luatable popvalue(lua_State *L)
 	for( int i = 1; i <= len; ++i)
 	{
 		lua_rawgeti(L,-1,i);
-		
-		if(lua_isnil(L,-1))
+		int type = lua_type(L,-1);
+		if(type == LUA_TNIL)
 		{
 			ret.push_back(any());
 			lua_pop(L,1);
 		}
-		else if(lua_isuserdata(L,-1))
+		else if(type == LUA_TUSERDATA)
 		{
 			const void *r = lua_touserdata(L,-1);
 			if(((Integer64*)r)->GetFlag() == 0XFEDC1234)
@@ -159,13 +159,13 @@ inline luatable popvalue(lua_State *L)
 				ret.push_back(r);
 			lua_pop(L,1);
 		}		
-		else if(lua_isnumber(L,-1))
+		else if(type == LUA_TNUMBER)
 			ret.push_back(popvalue<int64_t>(L));
-		else if(lua_isstring(L,-1))
+		else if(type == LUA_TSTRING)
 			ret.push_back(popvalue<std::string>(L));
-		else if(lua_isboolean(L,-1))
+		else if(type == LUA_TBOOLEAN)
 			ret.push_back(popvalue<bool>(L));
-		else if(lua_istable(L,-1))
+		else if(type == LUA_TTABLE)
 		{
 #ifdef _LUA51_
 			int _len = lua_objlen(L, -1);//for lua5.1
