@@ -429,10 +429,12 @@ public:
 typedef int (*lua_fun)(lua_State*);
 
 #ifndef _GETFUNC
-#define _GETFUNC\
+#define _GETFUNC ({\
         __func func;\
         void *t = lua_touserdata(L,lua_upvalueindex(1));\
-        memcpy(&func,t,sizeof(func));
+        memcpy(&func,t,sizeof(func));\
+        func;\
+    })
 #endif
 
 template<typename FUNC>
@@ -456,16 +458,14 @@ private:
     template<typename Result>
     static int doCall(lua_State *L,Cla *cla,Int2Type<false>)
     {
-        _GETFUNC;
-        push_obj<Result>(L,(cla->*func)());
+        push_obj<Result>(L,(cla->*_GETFUNC)());
         return 1;
     }
 
      template<typename Result>
     static int doCall(lua_State *L,Cla *cla,Int2Type<true>)
     {
-        _GETFUNC;
-        (cla->*func)();
+        (cla->*_GETFUNC)();
         return 0;
     }
 
@@ -492,16 +492,14 @@ private:
     template<typename Result>
     static int doCall(lua_State *L,Cla *cla,Arg1 arg1,Int2Type<false>)
     {
-        _GETFUNC;
-        push_obj<Result>(L,(cla->*func)(arg1));
+        push_obj<Result>(L,(cla->*_GETFUNC)(arg1));
         return 1;
     }
 
     template<typename Result>
     static int doCall(lua_State *L,Cla *cla,Arg1 arg1,Int2Type<true>)
     {
-        _GETFUNC;
-        (cla->*func)(arg1);
+        (cla->*_GETFUNC)(arg1);
         return 0;
     }
 
@@ -530,16 +528,14 @@ private:
     template<typename Result>
     static int doCall(lua_State *L,Cla *cla,Arg1 arg1,Arg2 arg2,Int2Type<false>)
     {
-        _GETFUNC;
-        push_obj<Result>(L,(cla->*func)(arg1,arg2));
+        push_obj<Result>(L,(cla->*_GETFUNC)(arg1,arg2));
         return 1;
     }
 
     template<typename Result>
     static int doCall(lua_State *L,Cla *cla,Arg1 arg1,Arg2 arg2,Int2Type<true>)
     {
-        _GETFUNC;
-        (cla->*func)(arg1,arg2);
+        (cla->*_GETFUNC)(arg1,arg2);
         return 0;
     }
 };
@@ -569,16 +565,14 @@ private:
     template<typename Result>
     static int doCall(lua_State *L,Cla *cla,Arg1 arg1,Arg2 arg2,Arg3 arg3,Int2Type<false>)
     {
-        _GETFUNC;
-        push_obj<Result>(L,(cla->*func)(arg1,arg2,arg3));
+        push_obj<Result>(L,(cla->*_GETFUNC)(arg1,arg2,arg3));
         return 1;
     }
 
     template<typename Result>
     static int doCall(lua_State *L,Cla *cla,Arg1 arg1,Arg2 arg2,Arg3 arg3,Int2Type<true>)
     {
-        _GETFUNC;
-        (cla->*func)(arg1,arg2,arg3);
+        (cla->*_GETFUNC)(arg1,arg2,arg3);
         return 0;
     }
 };
@@ -610,16 +604,14 @@ private:
     template<typename Result>
     static int doCall(lua_State *L,Cla *cla,Arg1 arg1,Arg2 arg2,Arg3 arg3,Arg4 arg4,Int2Type<false>)
     {
-        _GETFUNC;
-        push_obj<Result>(L,(cla->*func)(arg1,arg2,arg3,arg4));
+        push_obj<Result>(L,(cla->*_GETFUNC)(arg1,arg2,arg3,arg4));
         return 1;
     }
 
 	template<typename Result>
     static int doCall(lua_State *L,Cla *cla,Arg1 arg1,Arg2 arg2,Arg3 arg3,Arg4 arg4,Int2Type<true>)
     {
-        _GETFUNC;
-        (cla->*func)(arg1,arg2,arg3,arg4);
+        (cla->*_GETFUNC)(arg1,arg2,arg3,arg4);
         return 0;
     }
 };

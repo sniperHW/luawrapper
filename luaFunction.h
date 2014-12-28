@@ -83,10 +83,11 @@ private:
 };
 
 #ifndef PUSH_FUNCTOR
-#define PUSH_FUNCTOR\
+#define PUSH_FUNCTOR do{\
 	lua_pushlightuserdata(L, (void*)_func);\
 	lua_pushcclosure(L,lua_cfunction,1);\
-	lua_setglobal(L, name);
+	lua_setglobal(L, name);\
+	}while(0)
 #endif
 
 typedef int (*lua_fun)(lua_State *);
