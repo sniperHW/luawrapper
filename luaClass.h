@@ -114,7 +114,11 @@ public:
 		Integer64 *i64self  = (Integer64 *)lua_touserdata(L,1);
 		luaL_argcheck(L, i64self  != NULL, 1, "userdata expected");
 		char temp[64];
-		sprintf(temp, "%ld", i64self->m_val);
+#ifdef _VC
+		_snprintf_s(temp,512,"%ld", i64self->m_val);
+#else
+		snprintf(temp,512, "%ld", i64self->m_val);
+#endif
 		lua_pushstring(L, temp);
 		return 1;
 	}
@@ -429,12 +433,7 @@ public:
 typedef int (*lua_fun)(lua_State*);
 
 #ifndef _GETFUNC
-#define _GETFUNC ({\
-        __func func;\
-        void *t = lua_touserdata(L,lua_upvalueindex(1));\
-        memcpy(&func,t,sizeof(func));\
-        func;\
-    })
+#define _GETFUNC (*(__func*)lua_touserdata(L,lua_upvalueindex(1)))
 #endif
 
 template<typename FUNC>

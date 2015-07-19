@@ -71,6 +71,7 @@ end
 function test8(a,b)
 	print(a + b * 2)
 	print(a*20 - b * 2)
+	print(i64.new)
 end
 
 function test9(obj)
