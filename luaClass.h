@@ -402,7 +402,7 @@ public:
 		{
 			char str[512];
 #ifdef _VC
-			_snprintf(str,512,"%s: unsupport %d arguments constructor\n",luaRegisterClass<T>::GetClassName(),arg_size);
+			_snprintf_s(str,512,"%s: unsupport %d arguments constructor\n",luaRegisterClass<T>::GetClassName(),arg_size);
 #else
 			snprintf(str,512,"%s: unsupport %d arguments constructor\n",luaRegisterClass<T>::GetClassName(),arg_size);
 #endif
