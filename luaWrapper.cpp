@@ -111,11 +111,15 @@ void Integer64::Register2Lua(lua_State *L)
 
 	lua_rawset(L,1);
 	lua_pop(L,1);
-
+#if (LUA_VERSION_NUM<502)
+	luaL_register(L,"i64",i64Lib);
+	lua_pop(L,1);
+#else
 	lua_getglobal(L,"_G");
     luaL_newlib(L, i64Lib);
     lua_setfield(L, -2, "i64");
-    lua_pop(L, 1);		
+    lua_pop(L, 1);
+#endif		
 }
 
 void get_luatable(luatable &lt,lua_State *L)
