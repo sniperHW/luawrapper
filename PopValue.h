@@ -134,10 +134,10 @@ template<>
 inline luatable popvalue(lua_State *L)
 {
 	luatable ret;
-#ifdef _LUA51_
-	int len = lua_objlen(L, -1);//for lua5.1
+#if (LUA_VERSION_NUM<502)
+	int len = lua_objlen(L, -1);
 #else	
-	int len = luaL_len(L, -1);//for lua5.2
+	int len = luaL_len(L, -1);
 #endif
 	for( int i = 1; i <= len; ++i)
 	{
@@ -167,10 +167,10 @@ inline luatable popvalue(lua_State *L)
 			ret.push_back(popvalue<bool>(L));
 		else if(type == LUA_TTABLE)
 		{
-#ifdef _LUA51_
-			int _len = lua_objlen(L, -1);//for lua5.1
+#if (LUA_VERSION_NUM<502)
+			int _len = lua_objlen(L, -1);
 #else	
-			int _len = luaL_len(L, -1);//for lua5.2
+			int _len = luaL_len(L, -1);
 #endif		
 			if(_len == 0)
 			{
