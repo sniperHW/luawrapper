@@ -106,7 +106,7 @@ void test_lua_return_luatable(lua_State *L)
 	try{
 		luatable lt = luacpp::call<luatable>(L,"test5");
 		for(int i = 0 ;i < (int)lt.size(); ++i)
-			printf("%s\n",any_cast<std::string>(lt[i]).c_str());
+			printf("%s\n",any_cast<const char*>(lt[i]));
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -257,7 +257,7 @@ void test_getglobal(lua_State *L)
 		luatable lt = luacpp::Get<luatable>(L,"t_table");
 		for(int i = 0; i < (int)lt.size();++i)
 		{
-			printf("%d\n",any_cast<int>(lt[i]));
+			printf("%f\n",any_cast<double>(lt[i]));
 		}
 	}
 	catch(std::string &err)

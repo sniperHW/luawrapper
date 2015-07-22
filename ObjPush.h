@@ -38,10 +38,11 @@ private:
 	
 	void _objpush(lua_State *L,const T &arg,Int2Type<true>)
 	{
-		lua_pushnumber(L,(lua_Number)arg);
+		if((lua_Number)arg == (lua_Integer)arg)
+			lua_pushinteger(L,(lua_Integer)arg);
+		else
+			lua_pushnumber(L,(lua_Number)arg);
 	}	
-	
-	
 };
 
 //对指针类型的特化
@@ -181,7 +182,10 @@ class concrete_any_pusher : public any_pusher
 public:
 	void push(lua_State *L,any *_any)
 	{
-		lua_pushnumber(L,any_cast<T>(*_any));
+		if((lua_Number)any_cast<T>(*_any) == (lua_Integer)any_cast<T>(*_any))
+			lua_pushinteger(L,(lua_Integer)any_cast<T>(*_any));
+		else
+			lua_pushnumber(L,(lua_Number)any_cast<T>(*_any));
 	}
 };
 

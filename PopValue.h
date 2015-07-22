@@ -129,6 +129,21 @@ inline int64_t popvalue(lua_State *L)
 	}
 }
 
+template<>
+inline double popvalue(lua_State *L)
+{
+	double ret = lua_tonumber(L,-1);
+	lua_pop(L,1);
+	return ret;
+}
+
+template<>
+inline float popvalue(lua_State *L)
+{
+	double ret = lua_tonumber(L,-1);
+	lua_pop(L,1);
+	return (float)ret;
+}
 
 template<>
 inline luatable popvalue(lua_State *L)
@@ -159,8 +174,14 @@ inline luatable popvalue(lua_State *L)
 				ret.push_back(r);
 			lua_pop(L,1);
 		}		
-		else if(type == LUA_TNUMBER)
-			ret.push_back(popvalue<int64_t>(L));
+		else if(type == LUA_TNUMBER){
+			lua_Number n = lua_tonumber(L,-1);
+			if(n == lua_Integer(n)){
+				ret.push_back(popvalue<int64_t>(L));
+			}
+			else
+				ret.push_back(popvalue<double>(L));
+		}
 		else if(type == LUA_TSTRING)
 			ret.push_back(popvalue<std::string>(L));
 		else if(type == LUA_TBOOLEAN)

@@ -33,7 +33,7 @@ typedef std::vector<any> luatable;
 
 typedef LOKI_TYPELIST_15(bool,char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,std::string,luaObject,luatable,int64_t) SupportType;
 
-typedef LOKI_TYPELIST_11(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,float,double,int64_t) numberType;
+typedef LOKI_TYPELIST_9(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,int64_t) intType;
 
 //注册到lua中的用户数据类型信息
 template<typename T>
@@ -96,7 +96,7 @@ public: // structors
    any(const ValueType & value)
       :counter(new int(1)),luaRegisterClassName("")
    {
-	   content = create_holder<ValueType>(value,Int2Type<IndexOf<numberType,ValueType>::value >= 0>());
+	   content = create_holder<ValueType>(value,Int2Type<IndexOf<intType,ValueType>::value >= 0>());
 	   luaRegisterClassName = 	luaRegisterClass<typename pointerTraits<ValueType>::PointeeType>::GetClassName();
 	   _any_pusher = create_any_pusher<ValueType>();
    }
@@ -220,7 +220,7 @@ inline ValueType _any_cast(const any &operand,Int2Type<false>)
 template<typename ValueType>
 inline ValueType any_cast(const any & operand)
 {
-	return _any_cast<ValueType>(operand,Int2Type<IndexOf<numberType,ValueType>::value >= 0>());
+	return _any_cast<ValueType>(operand,Int2Type<IndexOf<intType,ValueType>::value >= 0>());
 }
 
 template<>
@@ -229,6 +229,34 @@ inline std::string any_cast(const any & operand)
 	any::holder<std::string> *tmp = static_cast<any::holder<std::string> *>(operand.content);
 	return tmp->held;
 }
+
+template<>
+inline const char *any_cast(const any &operand){
+	any::holder<std::string> *tmp = static_cast<any::holder<std::string> *>(operand.content);
+	return tmp->held.c_str();
+}
+
+
+template<>
+inline char *any_cast(const any &operand){
+	any::holder<std::string> *tmp = static_cast<any::holder<std::string> *>(operand.content);
+	return const_cast<char*>(tmp->held.c_str());
+}
+
+
+template<>
+inline double any_cast(const any & operand)
+{
+	any::holder<double> *tmp = static_cast<any::holder<double> *>(operand.content);
+	return tmp->held;
+}
+
+template<>
+inline float any_cast(const any & operand)
+{
+	return (float)any_cast<double>(operand);
+}
+
 
 
 //unsupported
