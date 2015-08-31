@@ -58,8 +58,8 @@ void test_class1(lua_State *L)
 		.constructor<void>()//无参构造
 		.constructor<const test_class_A&>()//一个参数构造
 		.property("memb_a",&test_class_A::memb_a)
-		.memb_function("show",&test_class_A::show)
-		.static_function("static_func",&test_class_A::func_static);
+		.method("show",&test_class_A::show)
+		.method("static_func",&test_class_A::func_static);
 
 
 	test_class_A a;
@@ -164,8 +164,8 @@ void test_call_virtual_function(lua_State *L)
 {
 	printf("\n----- lua call C++ virtual function -----\n");
 	luacpp::reg_cclass<base>::_reg(L,"base")
-		.memb_function("show",&base::show)
-		.memb_function("show2",&base::show2);
+		.method("show",&base::show)
+		.method("show2",&base::show2);
 	luacpp::reg_cclass<child,base>::_reg(L,"child");
 	child c;
 	base *b = &c;

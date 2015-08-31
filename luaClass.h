@@ -464,7 +464,6 @@ public:
 
 };
 
-typedef int (*lua_fun)(lua_State*);
 
 #ifndef _GETFUNC
 #define _GETFUNC (*(__func*)lua_touserdata(L,lua_upvalueindex(1)))
@@ -761,7 +760,7 @@ public:
 	class_def(lua_State *L):L(L){}
 
 	template<typename property_type>
-	class_def<T> property(const char *name,property_type (T::*property))
+	class_def<T>& property(const char *name,property_type (T::*property))
 	{
 		memberfield<T> mf;
 		mf.tt  = MEMBER_FIELD;
@@ -772,37 +771,128 @@ public:
 		return *this;
 	}
 
-	template<typename FUNTOR>
-	class_def<T> memb_function(const char *fun_name,FUNTOR _func)
+	//class member method
+	template<typename Ret,typename Cla>
+	class_def<T>& method(const char *name,Ret(Cla::*_func)())
 	{
 		memberfield<T> mf;
 		mf.tt = MEMBER_FUNCTION;
 		mf.mfunction = (void(T::*)())_func;
-		mf.mlua_func = memberfunbinder<FUNTOR>::lua_cfunction;
-		luaClassWrapper<T>::InsertFields(fun_name,mf);
+		mf.mlua_func = memberfunbinder<Ret(Cla::*)()>::lua_cfunction;
+		luaClassWrapper<T>::InsertFields(name,mf);
 		return *this;
 	}
 
-	template<typename FUNTOR>
-	class_def<T> static_function(const char *fun_name,FUNTOR _func)
+	template<typename Ret,typename Arg1,typename Cla>
+	class_def<T>& method(const char *name,Ret(Cla::*_func)(Arg1))
+	{
+		memberfield<T> mf;
+		mf.tt = MEMBER_FUNCTION;
+		mf.mfunction = (void(T::*)())_func;
+		mf.mlua_func = memberfunbinder<Ret(Cla::*)(Arg1)>::lua_cfunction;
+		luaClassWrapper<T>::InsertFields(name,mf);
+		return *this;
+	}
+
+	template<typename Ret,typename Arg1,typename Arg2,typename Cla>
+	class_def<T>& method(const char *name,Ret(Cla::*_func)(Arg1,Arg2))
+	{
+		memberfield<T> mf;
+		mf.tt = MEMBER_FUNCTION;
+		mf.mfunction = (void(T::*)())_func;
+		mf.mlua_func = memberfunbinder<Ret(Cla::*)(Arg1,Arg2)>::lua_cfunction;
+		luaClassWrapper<T>::InsertFields(name,mf);
+		return *this;
+	}
+
+	template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename Cla>
+	class_def<T>& method(const char *name,Ret(Cla::*_func)(Arg1,Arg2,Arg3))
+	{
+		memberfield<T> mf;
+		mf.tt = MEMBER_FUNCTION;
+		mf.mfunction = (void(T::*)())_func;
+		mf.mlua_func = memberfunbinder<Ret(Cla::*)(Arg1,Arg2,Arg3)>::lua_cfunction;
+		luaClassWrapper<T>::InsertFields(name,mf);
+		return *this;
+	}
+
+	template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename Arg4,typename Cla>
+	class_def<T>& method(const char *name,Ret(Cla::*_func)())
+	{
+		memberfield<T> mf;
+		mf.tt = MEMBER_FUNCTION;
+		mf.mfunction = (void(T::*)())_func;
+		mf.mlua_func = memberfunbinder<Ret(Cla::*)(Arg1,Arg2,Arg3,Arg4)>::lua_cfunction;
+		luaClassWrapper<T>::InsertFields(name,mf);
+		return *this;
+	}
+
+	//class static method
+	template<typename Ret>
+	class_def<T>& method(const char *name,Ret(*_func)())
 	{
 		memberfield<T> mf;
 		mf.tt = STATIC_FUNCTION;
 		mf.sfunction = (void (*)())_func;
-		mf.slua_func = funbinder<FUNTOR>::lua_cfunction;
-		luaClassWrapper<T>::InsertFields(fun_name,mf);
+		mf.slua_func = funbinder<Ret(*)()>::lua_cfunction;
+		luaClassWrapper<T>::InsertFields(name,mf);
+		return *this;		
+	}
+
+	template<typename Ret,typename Arg1>
+	class_def<T>& method(const char *name,Ret(*_func)(Arg1))
+	{
+		memberfield<T> mf;
+		mf.tt = STATIC_FUNCTION;
+		mf.sfunction = (void (*)())_func;
+		mf.slua_func = funbinder<Ret(*)(Arg1)>::lua_cfunction;
+		luaClassWrapper<T>::InsertFields(name,mf);
+		return *this;		
+	}
+
+	template<typename Ret,typename Arg1,typename Arg2>
+	class_def<T>& method(const char *name,Ret(*_func)(Arg1,Arg2))
+	{
+		memberfield<T> mf;
+		mf.tt = STATIC_FUNCTION;
+		mf.sfunction = (void (*)())_func;
+		mf.slua_func = funbinder<Ret(*)(Arg1,Arg2)>::lua_cfunction;
+		luaClassWrapper<T>::InsertFields(name,mf);
+		return *this;		
+	}
+
+	template<typename Ret,typename Arg1,typename Arg2,typename Arg3>
+	class_def<T>& method(const char *name,Ret(*_func)(Arg1,Arg2,Arg3))
+	{
+		memberfield<T> mf;
+		mf.tt = STATIC_FUNCTION;
+		mf.sfunction = (void (*)())_func;
+		mf.slua_func = funbinder<Ret(*)(Arg1,Arg2,Arg3)>::lua_cfunction;
+		luaClassWrapper<T>::InsertFields(name,mf);
+		return *this;		
+	}								 
+
+
+	template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename Arg4>
+	class_def<T>& method(const char *name,Ret(*_func)(Arg1,Arg2,Arg3,Arg4))
+	{
+		memberfield<T> mf;
+		mf.tt = STATIC_FUNCTION;
+		mf.sfunction = (void (*)())_func;
+		mf.slua_func = funbinder<Ret(*)(Arg1,Arg2,Arg3,Arg4)>::lua_cfunction;
+		luaClassWrapper<T>::InsertFields(name,mf);
 		return *this;		
 	}
 
 	template<typename ARG1>
-	class_def<T> constructor()
+	class_def<T>& constructor()
 	{
 		_constructor<ARG1>(Int2Type<isVoid<ARG1>::is_Void == 1>());
 		return *this;
 	}
 
 	template<typename ARG1,typename ARG2>
-	class_def<T> constructor()
+	class_def<T>& constructor()
 	{
 		memberfield<T> mf;
 		mf.tt = CONSTRUCTOR;
@@ -812,7 +902,7 @@ public:
 	}
 
 	template<typename ARG1,typename ARG2,typename ARG3>
-	class_def<T> constructor()
+	class_def<T>& constructor()
 	{
 		memberfield<T> mf;
 		mf.tt = CONSTRUCTOR;
@@ -822,7 +912,7 @@ public:
 	}
 
 	template<typename ARG1,typename ARG2,typename ARG3,typename ARG4>
-	class_def<T> constructor()
+	class_def<T>& constructor()
 	{
 		memberfield<T> mf;
 		mf.tt = CONSTRUCTOR;

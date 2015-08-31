@@ -90,7 +90,6 @@ private:
 	}while(0)
 #endif
 
-typedef int (*lua_fun)(lua_State *);
 template<typename FUNCTOR>
 class funbinder{};
 
