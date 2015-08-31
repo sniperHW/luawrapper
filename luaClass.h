@@ -1,9 +1,11 @@
 #ifndef _LUACLASS_H
 #define _LUACLASS_H
+#include <string.h>
 #include "luacommon.h"
 #include "luaObject.h"
 #include "any.h"
-#include <string.h>
+#include "luaFunction.h"
+
 namespace luacpp{
 template<typename T>
 void push_obj(lua_State *L,const T &obj);
@@ -147,19 +149,20 @@ static void pushI64(lua_State *L,int64_t value)
 template <typename T>
 struct memberfield
 {
-    memberfield():gmv(NULL),smv(NULL),mc(NULL),function(NULL){}
+    memberfield():gmv(NULL),smv(NULL),mc(NULL),mfunction(NULL),sfunction(NULL){}
 
     template<typename PARENT>
     memberfield(const memberfield<PARENT> &p):gmv((GMV)p.gmv),smv((SMV)p.smv),mc((MC)p.mc),
-		function(p.function),property(p.property) {}
+		mfunction(p.mfunction),property(p.property),sfunction(p.sfunction) {}
 
-    typedef void (*GMV)(T *,lua_State*,void *(T::*));
-    typedef void (*SMV)(T *,lua_State*,void *(T::*));
+    typedef void (*GMV)(T *,lua_State*,void *(T::*));//for property get
+    typedef void (*SMV)(T *,lua_State*,void *(T::*));//for property set
     typedef int (*MC)(lua_State*);
     GMV gmv;
     SMV smv;
     MC  mc;
-    void  (T::*function)(void);
+    void  (T::*mfunction)(void);    //member func
+    void  (*sfunction)(void);       //static func
 	void *(T::*property);
 };
 
@@ -371,13 +374,20 @@ public:
         typename std::map<std::string,memberfield<T> >::iterator it = luaClassWrapper<T>::fields.find(std::string(name));
         if(it != luaClassWrapper<T>::fields.end())
         {
-            if(it->second.function)
+            if(it->second.mfunction)
             {
-                lua_pushlightuserdata(L,&it->second.function);
+                lua_pushlightuserdata(L,&it->second.mfunction);
                 lua_pushcclosure(L,it->second.mc,1);
             }
-            else
+            else if(it->second.sfunction)
+            {
+                lua_pushlightuserdata(L,(void*)it->second.sfunction);
+                lua_pushcclosure(L,it->second.mc,1);
+            }
+            else if(it->second.property)
                 it->second.gmv(obj->ptr,L,it->second.property);
+            else
+            	lua_pushnil(L);
         }
         else
             lua_pushnil(L);
@@ -738,14 +748,25 @@ public:
 	}
 
 	template<typename FUNTOR>
-	class_def<T> function(const char *fun_name,FUNTOR _func)
+	class_def<T> memb_function(const char *fun_name,FUNTOR _func)
 	{
 		memberfield<T> mf;
-		mf.function = (void(T::*)())_func;
+		mf.mfunction = (void(T::*)())_func;
 		lua_fun fun = memberfunbinder<FUNTOR>::lua_cfunction;
 		mf.mc = fun;
 		luaClassWrapper<T>::InsertFields(fun_name,mf);
 		return *this;
+	}
+
+	template<typename FUNTOR>
+	class_def<T> static_function(const char *fun_name,FUNTOR _func)
+	{
+		memberfield<T> mf;
+		mf.sfunction = (void (*)())_func;
+		lua_fun fun  = funbinder<FUNTOR>::lua_cfunction;
+		mf.mc = fun;
+		luaClassWrapper<T>::InsertFields(fun_name,mf);
+		return *this;		
 	}
 
 	template<typename ARG1>

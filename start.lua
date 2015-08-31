@@ -91,7 +91,10 @@ function test12(obj)
 	local t1 = test_class_A()
 	t1.memb_a = 100
 	local t2 = test_class_A(t1)
-	print(t2.memb_a)		
+	t1:show()
+	print("t2.memb_a",t2.memb_a)
+	print(t1)
+	t1.static_func()		
 end
 
 t_table = {1.1,2.2,3.3,4.4}
