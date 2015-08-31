@@ -10,7 +10,6 @@ namespace luacpp{
 template<typename T>
 void push_obj(lua_State *L,const T &obj);
 
-//ȡ��ջ����ֵ��֪ͨ�����ջ
 template<typename T>
 T popvalue(lua_State *L);
 class Integer64
@@ -146,24 +145,46 @@ static void pushI64(lua_State *L,int64_t value)
 	Integer64::setmetatable(L);
 }
 
+enum{
+	MEMBER_FUNCTION = 1,
+	STATIC_FUNCTION,
+	MEMBER_FIELD,
+	CONSTRUCTOR,
+};
+
 template <typename T>
 struct memberfield
 {
-    memberfield():gmv(NULL),smv(NULL),mc(NULL),mfunction(NULL),sfunction(NULL){}
+
+	typedef void (*property_getter)(T *,lua_State*,void *(T::*));//for property get
+    typedef void (*property_setter)(T *,lua_State*,void *(T::*));//for property set
+    char tt;
+    union{
+    	struct {
+    		property_getter getter;
+    		property_setter setter;
+    		void *(T::*property);
+    	};
+    	struct {
+    		void  (T::*mfunction)(void);    //member func
+    		lua_CFunction mlua_func;
+    	};
+    	struct {
+    		void  (*sfunction)(void);       //static func
+    		lua_CFunction slua_func;
+    	};
+    	lua_CFunction constructor;
+    };
+
+	memberfield() {
+		memset(this,0,sizeof(*this));
+	}
 
     template<typename PARENT>
-    memberfield(const memberfield<PARENT> &p):gmv((GMV)p.gmv),smv((SMV)p.smv),mc((MC)p.mc),
-		mfunction(p.mfunction),property(p.property),sfunction(p.sfunction) {}
+    memberfield(const memberfield<PARENT> &p){
+    	memcpy(this,&p,sizeof(p));
+    }
 
-    typedef void (*GMV)(T *,lua_State*,void *(T::*));//for property get
-    typedef void (*SMV)(T *,lua_State*,void *(T::*));//for property set
-    typedef int (*MC)(lua_State*);
-    GMV gmv;
-    SMV smv;
-    MC  mc;
-    void  (T::*mfunction)(void);    //member func
-    void  (*sfunction)(void);       //static func
-	void *(T::*property);
 };
 
 template<typename T>
@@ -198,7 +219,7 @@ static void _GetProperty(T *self,lua_State *L,void*(T::*property),Int2Type<true>
 	push_obj<luatable>(L,*lt_ptr);
 }
 
-//��ȡ��Ա�����ֵ
+
 template<typename T,typename property_type>
 static void GetProperty(T *self,lua_State *L,void*(T::*property) )
 {
@@ -310,7 +331,7 @@ class luaClassWrapper
 
 		static int InsertConstructors(int arg_count,memberfield<T> &mf)
 		{
-			if(constructors[arg_count].mc == NULL)
+			if(constructors[arg_count].constructor == NULL)
 			{
 				constructors[arg_count] = mf;
 				++constructor_size;
@@ -361,10 +382,12 @@ public:
        objUserData<T> *self = checkobjuserdata(L,1);
        const char *name = luaL_checkstring(L, 2);
        typename std::map<std::string,memberfield<T> >::iterator it = luaClassWrapper<T>::fields.find(std::string(name));
-       if(it != luaClassWrapper<T>::fields.end() && it->second.property)
-		it->second.smv(self->ptr,L,it->second.property);
+       if(it != luaClassWrapper<T>::fields.end())
+	   {
+	     memberfield<T> &mf = it->second;
+	     if(mf.tt == MEMBER_FIELD) mf.setter(self->ptr,L,mf.property);
+	   }			
        return 0;
-
     }
 
     static int Index(lua_State *L)
@@ -374,34 +397,35 @@ public:
         typename std::map<std::string,memberfield<T> >::iterator it = luaClassWrapper<T>::fields.find(std::string(name));
         if(it != luaClassWrapper<T>::fields.end())
         {
-            if(it->second.mfunction)
-            {
-                lua_pushlightuserdata(L,&it->second.mfunction);
-                lua_pushcclosure(L,it->second.mc,1);
+        	memberfield<T> &mf = it->second;
+        	if(mf.tt == MEMBER_FUNCTION)
+        	{
+        		lua_pushlightuserdata(L,&mf.mfunction);
+                lua_pushcclosure(L,mf.mlua_func,1);
+                return 1;
+        	}
+        	else if(mf.tt == STATIC_FUNCTION)
+        	{
+        		lua_pushlightuserdata(L,(void*)mf.sfunction);
+                lua_pushcclosure(L,mf.slua_func,1);
+                return 1;        	
             }
-            else if(it->second.sfunction)
+            else if(mf.tt == MEMBER_FIELD)
             {
-                lua_pushlightuserdata(L,(void*)it->second.sfunction);
-                lua_pushcclosure(L,it->second.mc,1);
+            	mf.getter(obj->ptr,L,mf.property);
+            	return 1;
             }
-            else if(it->second.property)
-                it->second.gmv(obj->ptr,L,it->second.property);
-            else
-            	lua_pushnil(L);
         }
-        else
-            lua_pushnil(L);
-        return 1;
-
+        return 0;
     }
 
 
     static int Construct(lua_State *L)
     {
         int arg_size = lua_gettop(L);
-		if(arg_size < 16 && luaClassWrapper<T>::constructors[arg_size].mc)
+		if(arg_size < 16 && luaClassWrapper<T>::constructors[arg_size].constructor)
 		{
-			luaClassWrapper<T>::constructors[arg_size].mc(L);
+			luaClassWrapper<T>::constructors[arg_size].constructor(L);
 			luaL_getmetatable(L, "kenny.lualib");
 			lua_pushstring(L,luaRegisterClass<T>::GetClassName());
 			lua_gettable(L,-2);
@@ -740,9 +764,10 @@ public:
 	class_def<T> property(const char *name,property_type (T::*property))
 	{
 		memberfield<T> mf;
-		mf.gmv = GetProperty<T,property_type>;
+		mf.tt  = MEMBER_FIELD;
+		mf.getter = GetProperty<T,property_type>;
 		mf.property = (void*(T::*))property;
-		mf.smv = SetProperty<T,property_type>;
+		mf.setter = SetProperty<T,property_type>;
 		luaClassWrapper<T>::InsertFields(name,mf);
 		return *this;
 	}
@@ -751,9 +776,9 @@ public:
 	class_def<T> memb_function(const char *fun_name,FUNTOR _func)
 	{
 		memberfield<T> mf;
+		mf.tt = MEMBER_FUNCTION;
 		mf.mfunction = (void(T::*)())_func;
-		lua_fun fun = memberfunbinder<FUNTOR>::lua_cfunction;
-		mf.mc = fun;
+		mf.mlua_func = memberfunbinder<FUNTOR>::lua_cfunction;
 		luaClassWrapper<T>::InsertFields(fun_name,mf);
 		return *this;
 	}
@@ -762,9 +787,9 @@ public:
 	class_def<T> static_function(const char *fun_name,FUNTOR _func)
 	{
 		memberfield<T> mf;
+		mf.tt = STATIC_FUNCTION;
 		mf.sfunction = (void (*)())_func;
-		lua_fun fun  = funbinder<FUNTOR>::lua_cfunction;
-		mf.mc = fun;
+		mf.slua_func = funbinder<FUNTOR>::lua_cfunction;
 		luaClassWrapper<T>::InsertFields(fun_name,mf);
 		return *this;		
 	}
@@ -780,8 +805,8 @@ public:
 	class_def<T> constructor()
 	{
 		memberfield<T> mf;
-		lua_fun fun = construct_function2<ARG1,ARG2>::lua_cfunction;
-		mf.mc = fun;
+		mf.tt = CONSTRUCTOR;
+		mf.constructor = construct_function2<ARG1,ARG2>::lua_cfunction;
 		_constructor(2,mf);
 		return *this;
 	}
@@ -790,8 +815,8 @@ public:
 	class_def<T> constructor()
 	{
 		memberfield<T> mf;
-		lua_fun fun = construct_function3<ARG1,ARG2,ARG3>::lua_cfunction;
-		mf.mc = fun;
+		mf.tt = CONSTRUCTOR;
+		mf.constructor = construct_function3<ARG1,ARG2,ARG3>::lua_cfunction;
 		_constructor(3,mf);
 		return *this;
 	}
@@ -800,8 +825,8 @@ public:
 	class_def<T> constructor()
 	{
 		memberfield<T> mf;
-		lua_fun fun = construct_function4<ARG1,ARG2,ARG3,ARG4>::lua_cfunction;
-		mf.mc = fun;
+		mf.tt = CONSTRUCTOR;
+		mf.constructor = construct_function4<ARG1,ARG2,ARG3,ARG4>::lua_cfunction;
 		_constructor(4,mf);
 		return *this;
 	}
@@ -811,8 +836,8 @@ private:
 	void _constructor(Int2Type<true>)
 	{
 		memberfield<T> mf;
-		lua_fun fun = construct_function0::lua_cfunction;
-		mf.mc = fun;
+		mf.tt = CONSTRUCTOR;
+		mf.constructor = construct_function0::lua_cfunction;
 		_constructor(0,mf);
 	}
 
@@ -820,8 +845,8 @@ private:
 	void _constructor(Int2Type<false>)
 	{
 		memberfield<T> mf;
-		lua_fun fun = construct_function1<ARG1>::lua_cfunction;
-		mf.mc = fun;
+		mf.tt = CONSTRUCTOR;
+		mf.constructor = construct_function1<ARG1>::lua_cfunction;
 		_constructor(1,mf);
 	}
 
