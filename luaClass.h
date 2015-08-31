@@ -358,8 +358,8 @@ public:
        objUserData<T> *self = checkobjuserdata(L,1);
        const char *name = luaL_checkstring(L, 2);
        typename std::map<std::string,memberfield<T> >::iterator it = luaClassWrapper<T>::fields.find(std::string(name));
-       if(it != luaClassWrapper<T>::fields.end())
-			it->second.smv(self->ptr,L,it->second.property);
+       if(it != luaClassWrapper<T>::fields.end() && it->second.property)
+		it->second.smv(self->ptr,L,it->second.property);
        return 0;
 
     }
