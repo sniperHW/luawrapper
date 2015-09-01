@@ -772,57 +772,13 @@ public:
 	}
 
 	//class member method
-	template<typename Ret,typename Cla>
-	class_def<T>& method(const char *name,Ret(Cla::*_func)())
+	template<typename FUNTOR>
+	class_def<T>& method(const char *name,FUNTOR _func)
 	{
 		memberfield<T> mf;
 		mf.tt = MEMBER_FUNCTION;
 		mf.mfunction = (void(T::*)())_func;
-		mf.mlua_func = memberfunbinder<Ret(Cla::*)()>::lua_cfunction;
-		luaClassWrapper<T>::InsertFields(name,mf);
-		return *this;
-	}
-
-	template<typename Ret,typename Arg1,typename Cla>
-	class_def<T>& method(const char *name,Ret(Cla::*_func)(Arg1))
-	{
-		memberfield<T> mf;
-		mf.tt = MEMBER_FUNCTION;
-		mf.mfunction = (void(T::*)())_func;
-		mf.mlua_func = memberfunbinder<Ret(Cla::*)(Arg1)>::lua_cfunction;
-		luaClassWrapper<T>::InsertFields(name,mf);
-		return *this;
-	}
-
-	template<typename Ret,typename Arg1,typename Arg2,typename Cla>
-	class_def<T>& method(const char *name,Ret(Cla::*_func)(Arg1,Arg2))
-	{
-		memberfield<T> mf;
-		mf.tt = MEMBER_FUNCTION;
-		mf.mfunction = (void(T::*)())_func;
-		mf.mlua_func = memberfunbinder<Ret(Cla::*)(Arg1,Arg2)>::lua_cfunction;
-		luaClassWrapper<T>::InsertFields(name,mf);
-		return *this;
-	}
-
-	template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename Cla>
-	class_def<T>& method(const char *name,Ret(Cla::*_func)(Arg1,Arg2,Arg3))
-	{
-		memberfield<T> mf;
-		mf.tt = MEMBER_FUNCTION;
-		mf.mfunction = (void(T::*)())_func;
-		mf.mlua_func = memberfunbinder<Ret(Cla::*)(Arg1,Arg2,Arg3)>::lua_cfunction;
-		luaClassWrapper<T>::InsertFields(name,mf);
-		return *this;
-	}
-
-	template<typename Ret,typename Arg1,typename Arg2,typename Arg3,typename Arg4,typename Cla>
-	class_def<T>& method(const char *name,Ret(Cla::*_func)())
-	{
-		memberfield<T> mf;
-		mf.tt = MEMBER_FUNCTION;
-		mf.mfunction = (void(T::*)())_func;
-		mf.mlua_func = memberfunbinder<Ret(Cla::*)(Arg1,Arg2,Arg3,Arg4)>::lua_cfunction;
+		mf.mlua_func = memberfunbinder<FUNTOR>::lua_cfunction;
 		luaClassWrapper<T>::InsertFields(name,mf);
 		return *this;
 	}
