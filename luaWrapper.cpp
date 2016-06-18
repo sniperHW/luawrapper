@@ -43,19 +43,33 @@ int NewObj(lua_State *L,const void *ptr,const char *classname)
 
 int newI64(lua_State *L)
 {
-	Integer64 *tmp = (Integer64*)lua_touserdata(L,2);
-	if(tmp)
-		lua_pushlightuserdata(L,tmp);
-	else
+	int type = lua_type(L,1);
+	if(type == LUA_TUSERDATA)
 	{
-		long initval = (long)lua_tonumber(L,2);
+		Integer64 *tmp = (Integer64*)lua_touserdata(L,1);
+		if(tmp->GetFlag() == 0XFEDC1234)
+		{
+			lua_pushlightuserdata(L,tmp);
+			Integer64::setmetatable(L);
+			return 1;
+		}
+		else
+		{
+			return luaL_error(L,"invaild argument");
+		}
+	}
+	else if(type == LUA_TNUMBER)
+	{
+		long initval = (long)lua_tonumber(L,1);
 		size_t nbytes = sizeof(Integer64);
 		void *buf = lua_newuserdata(L, nbytes);
 		new(buf)Integer64(initval);
+		Integer64::setmetatable(L);
+		return 1;				
 	}
-	Integer64::setmetatable(L);
-	return 1;
+	return luaL_error(L,"invaild argument");
 }
+
 
 static const struct luaL_Reg i64Lib[] = {
 	{"new",newI64},
