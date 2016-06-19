@@ -49,7 +49,8 @@ int newI64(lua_State *L)
 		Integer64 *tmp = (Integer64*)lua_touserdata(L,1);
 		if(tmp->GetFlag() == 0XFEDC1234)
 		{
-			lua_pushlightuserdata(L,tmp);
+			void *buf = lua_newuserdata(L, sizeof(Integer64));
+			new(buf)Integer64(tmp->GetValue());
 			Integer64::setmetatable(L);
 			return 1;
 		}
@@ -60,10 +61,8 @@ int newI64(lua_State *L)
 	}
 	else if(type == LUA_TNUMBER)
 	{
-		long initval = (long)lua_tonumber(L,1);
-		size_t nbytes = sizeof(Integer64);
-		void *buf = lua_newuserdata(L, nbytes);
-		new(buf)Integer64(initval);
+		void *buf = lua_newuserdata(L, sizeof(Integer64));
+		new(buf)Integer64((int64_t)lua_tonumber(L,1));
 		Integer64::setmetatable(L);
 		return 1;				
 	}

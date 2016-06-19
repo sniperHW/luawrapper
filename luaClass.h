@@ -37,11 +37,28 @@ public:
 	}
 
 #ifndef I64_RELA
-#define I64_RELA(OP)\
-	Integer64 *i64self  = (Integer64 *)lua_touserdata(L,1);\
-	Integer64 *i64other = (Integer64 *)lua_touserdata(L,2);\
-	lua_pushboolean(L,i64self->m_val OP i64other->m_val);\
-	return 1;
+#define I64_RELA(OP) do{										\
+	Integer64 *i64self  = (Integer64 *)lua_touserdata(L,1);		\
+	Integer64 *i64other = (Integer64 *)lua_touserdata(L,2);		\
+	Integer64 tmp(0);											\
+	if(!i64other)												\
+	{															\
+		if(!lua_isnumber(L,2)) luaL_error(L,"bad argument");	\
+		tmp.m_val = (int64_t)lua_tonumber(L,2);					\
+		i64other = &tmp;										\
+	}															\
+	if(!i64self)												\
+	{															\
+		if(!lua_isnumber(L,1)) luaL_error(L,"bad argument");	\
+		int64_t num = (int64_t)lua_tonumber(L,1);				\
+		lua_pushboolean(L,num OP i64other->m_val);				\
+		return 1;												\
+	}else														\
+	{															\
+		i64self->m_val = i64self->m_val OP i64other->m_val;		\
+		lua_pushlightuserdata(L,i64self);						\
+		return 1;												\
+	}}while(0)
 #endif
 
 	static int i64Le(lua_State *L)
@@ -60,29 +77,31 @@ public:
 	}
 
 #ifndef I64_MATH
-#define I64_MATH(OP)\
-	Integer64 *i64self  = (Integer64 *)lua_touserdata(L,1);\
-	Integer64 *i64other = (Integer64 *)lua_touserdata(L,2);\
-	Integer64 tmp(0);\
-	if(!i64other)\
-	{\
-		tmp.m_val = (int64_t)lua_tonumber(L,2);\
-		i64other = &tmp;\
-	}\
-	if(!i64self)\
-	{\
-		long num = (long)lua_tonumber(L,1);\
-		size_t nbytes = sizeof(Integer64);\
-		i64self = (Integer64*)lua_newuserdata(L, nbytes);\
-		new(i64self)Integer64(num);\
-		i64self->m_val =  i64self->m_val OP i64other->m_val;\
-	}else\
-	{\
-		i64self->m_val = i64self->m_val OP i64other->m_val;\
-		lua_pushlightuserdata(L,i64self);\
-	}\
-	setmetatable(L);\
-	return 1;
+#define I64_MATH(OP) do{										\
+	Integer64 *i64self  = (Integer64 *)lua_touserdata(L,1);		\
+	Integer64 *i64other = (Integer64 *)lua_touserdata(L,2);		\
+	Integer64 tmp(0);											\
+	if(!i64other)												\
+	{															\
+		if(!lua_isnumber(L,2)) luaL_error(L,"bad argument");	\
+		tmp.m_val = (int64_t)lua_tonumber(L,2);					\
+		i64other = &tmp;										\
+	}															\
+	if(!i64self)												\
+	{															\
+		if(!lua_isnumber(L,1)) luaL_error(L,"bad argument");	\
+		long num = (long)lua_tonumber(L,1);						\
+		size_t nbytes = sizeof(Integer64);						\
+		i64self = (Integer64*)lua_newuserdata(L, nbytes);		\
+		new(i64self)Integer64(num);								\
+		i64self->m_val =  i64self->m_val OP i64other->m_val;	\
+	}else														\
+	{															\
+		i64self->m_val = i64self->m_val OP i64other->m_val;		\
+		lua_pushlightuserdata(L,i64self);						\
+	}															\
+	Integer64::setmetatable(L);									\
+	return 1;}while(0)
 #endif
 
 	static int i64Mod(lua_State *L)
