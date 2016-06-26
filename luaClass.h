@@ -36,8 +36,7 @@ public:
 		lua_pop(L,1);
 	}
 
-#ifndef I64_RELA
-#define I64_RELA(OP) do{										\
+#define GET_PARAM												\
 	Integer64 *i64self  = (Integer64 *)lua_touserdata(L,1);		\
 	Integer64 *i64other = (Integer64 *)lua_touserdata(L,2);		\
 	Integer64 tmp(0);											\
@@ -46,7 +45,11 @@ public:
 		if(!lua_isnumber(L,2)) luaL_error(L,"bad argument");	\
 		tmp.m_val = (int64_t)lua_tonumber(L,2);					\
 		i64other = &tmp;										\
-	}															\
+	}
+															
+	
+#define I64_RELA(OP) do{										\
+	GET_PARAM													\
 	if(!i64self)												\
 	{															\
 		if(!lua_isnumber(L,1)) luaL_error(L,"bad argument");	\
@@ -58,7 +61,7 @@ public:
 		lua_pushboolean(L,i64self->m_val OP i64other->m_val);	\
 		return 1;												\
 	}}while(0)
-#endif
+
 
 	static int i64Le(lua_State *L)
 	{
@@ -75,17 +78,8 @@ public:
 		I64_RELA(==);
 	}
 
-#ifndef I64_MATH
 #define I64_MATH(OP) do{										\
-	Integer64 *i64self  = (Integer64 *)lua_touserdata(L,1);		\
-	Integer64 *i64other = (Integer64 *)lua_touserdata(L,2);		\
-	Integer64 tmp(0);											\
-	if(!i64other)												\
-	{															\
-		if(!lua_isnumber(L,2)) luaL_error(L,"bad argument");	\
-		tmp.m_val = (int64_t)lua_tonumber(L,2);					\
-		i64other = &tmp;										\
-	}															\
+	GET_PARAM													\
 	if(!i64self)												\
 	{															\
 		if(!lua_isnumber(L,1)) luaL_error(L,"bad argument");	\
@@ -101,7 +95,7 @@ public:
 	}															\
 	Integer64::setmetatable(L);									\
 	return 1;}while(0)
-#endif
+
 
 	static int i64Mod(lua_State *L)
 	{
