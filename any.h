@@ -35,7 +35,7 @@ typedef LOKI_TYPELIST_15(bool,char,unsigned char,short,unsigned short,int,unsign
 
 typedef LOKI_TYPELIST_9(char,unsigned char,short,unsigned short,int,unsigned int,long,unsigned long,int64_t) intType;
 
-//注册到lua中的用户数据类型信息
+//娉ㄥ唽鍒發ua涓殑鐢ㄦ埛鏁版嵁绫诲瀷淇℃伅
 template<typename T>
 class luaRegisterClass
 {
@@ -80,12 +80,13 @@ class any;
 class any_pusher
 {
 public:
+	virtual ~any_pusher(){}
 	virtual void push(lua_State *L,any*) = 0; 
 };
 template <typename T>
 any_pusher *create_any_pusher();
 
-//一个精简版的boost::any
+//涓�涓簿绠�鐗堢殑boost::any
 class any
 {
 public: // structors
@@ -155,7 +156,6 @@ private:
 			delete counter;
 			delete content;
 			delete _any_pusher;
-			//printf("destroy\n");
 		}
 	}
 
@@ -200,7 +200,7 @@ public:
    int         * counter;
 public: // representation (public so any_cast can be non-friend)
    any_pusher     * _any_pusher;
-   std::string luaRegisterClassName;//保存的类型在lua中注册的名字
+   std::string luaRegisterClassName;//淇濆瓨鐨勭被鍨嬪湪lua涓敞鍐岀殑鍚嶅瓧
 
 };
 
