@@ -93,17 +93,6 @@ public:
 	}
 };
 
-template<>
-class objPush<char*>
-{
-public:
-	objPush(lua_State *L,char *value)
-	{
-		lua_pushstring(L,value);
-	}
-};
-
-
 //对int64的特化成
 template<>
 class objPush<int64_t>
@@ -122,7 +111,7 @@ class objPush<std::string>
 public:
 	objPush(lua_State *L,const std::string &arg)
 	{
-		lua_pushstring(L,arg.c_str());
+		lua_pushlstring(L,arg.c_str(),arg.size());
 	}
 };
 
