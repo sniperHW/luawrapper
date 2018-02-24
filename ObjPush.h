@@ -116,7 +116,7 @@ class objPush<std::string>
 public:
 	objPush(lua_State *L,const std::string &arg)
 	{
-		lua_pushstring(L,arg.c_str());
+		lua_pushlstring(L,arg.c_str(),arg.size());
 	}
 };
 
