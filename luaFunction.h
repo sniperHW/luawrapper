@@ -304,11 +304,7 @@ inline void check_call(lua_State *L,const char *funname)
 	{
 		lua_pop(L,1);
 		char str[512];
-#ifdef _VC
-		_snprintf_s(str,512,"lua中不存在函数%s",funname);
-#else
 		snprintf(str,512,"lua中不存在函数%s",funname);
-#endif
 		std::string err(str);
 		throw err;
 	}

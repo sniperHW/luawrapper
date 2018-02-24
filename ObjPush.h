@@ -19,6 +19,7 @@
 
 namespace luacpp{
 //调用lua函数时参数压栈的抽象
+
 template<typename T>
 class objPush
 {
@@ -28,13 +29,17 @@ public:
 		_objpush(L,arg,Int2Type<IndexOf<SupportType,T>::value >= 0>());
 	}
 private:
-	void _objpush(lua_State *L,const T &arg,Int2Type<false>)
-	{
+
+	/*
+	*  禁止向lua传递类对象或引用以防止用户向lua传递临时对象
+	*/
+	void _objpush(lua_State *L,const T &arg,Int2Type<false>);
+	/*{
 		if(!luaRegisterClass<typename pointerTraits<T>::PointeeType>::isRegister())
 			lua_pushlightuserdata(L,(T*)&arg);
 		else
-			objUserData<typename pointerTraits<T>::PointeeType>::NewObj(L,&arg);		
-	}
+			objUserData<typename pointerTraits<T>::PointeeType>::pushObj(L,&arg);		
+	}*/
 	
 	void _objpush(lua_State *L,const T &arg,Int2Type<true>)
 	{
@@ -44,6 +49,7 @@ private:
 			lua_pushnumber(L,(lua_Number)arg);
 	}	
 };
+
 
 //对指针类型的特化
 template<typename T>
@@ -59,7 +65,7 @@ public:
 			if(!luaRegisterClass<typename pointerTraits<T>::PointeeType>::isRegister())
 				lua_pushlightuserdata(L,(T*)arg);
 			else
-				objUserData<typename pointerTraits<T>::PointeeType>::NewObj(L,arg);
+				objUserData<typename pointerTraits<T>::PointeeType>::pushObj(L,arg);
 		}
 	}
 };
@@ -77,7 +83,7 @@ public:
 			if(!luaRegisterClass<typename pointerTraits<T>::PointeeType>::isRegister())
 				lua_pushlightuserdata(L,(T*)arg);
 			else
-				objUserData<typename pointerTraits<T>::PointeeType>::NewObj(L,arg);
+				objUserData<typename pointerTraits<T>::PointeeType>::pushObj(L,arg);
 		}
 	}
 };
@@ -100,18 +106,6 @@ public:
 	objPush(lua_State *L,char *value)
 	{
 		lua_pushstring(L,value);
-	}
-};
-
-
-//对int64的特化成
-template<>
-class objPush<int64_t>
-{
-public:
-	objPush(lua_State *L,int64_t value)
-	{
-		pushI64(L,value);
 	}
 };
 
@@ -200,7 +194,7 @@ public:
 			objPush<void*> obj(L,any_cast<void*>(*_any));
 		else
 		{
-			NewObj(L,any_cast<void*>(*_any),_any->luaRegisterClassName.c_str());
+			pushObj(L,any_cast<void*>(*_any),_any->luaRegisterClassName.c_str());
 		}
 	}
 };
@@ -265,15 +259,6 @@ public:
 	}
 };
 
-template<>
-class concrete_any_pusher<int64_t> : public any_pusher
-{
-public:
-	void push(lua_State *L,any *_any)
-	{
-		objPush<int64_t> obj(L,any_cast<int64_t>(*_any));
-	}
-};
 
 template <typename T>
 any_pusher *create_any_pusher()

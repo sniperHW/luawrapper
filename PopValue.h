@@ -16,7 +16,12 @@
 */	
 #ifndef _POPVALUE_H
 #define _POPVALUE_H
+
+#include <map>
+
 namespace luacpp{
+
+extern std::map<void*,void*> userdataToPtr;
 
 template<typename T>
 inline T _pop(lua_State *L,Int2Type<true>)
@@ -81,7 +86,8 @@ inline T pop_void_ptr(lua_State *L)
 {
 	T ret;
 	ret = lua_touserdata(L,-1);
-	if(((objUserData<void>*)ret)->m_flag == 0x1234AFEC)
+
+	if(userdataToPtr.find((void*)ret) != userdataToPtr.end())
 		ret = ((objUserData<void>*)ret)->ptr;
 	lua_pop(L,1);
 	return ret;	
@@ -108,28 +114,6 @@ inline bool popvalue(lua_State *L)
 }
 
 template<>
-inline int64_t popvalue(lua_State *L)
-{
-	if(lua_isuserdata(L,-1))
-	{
-		const void *r = lua_touserdata(L,-1);
-		if(((Integer64*)r)->GetFlag() == 0XFEDC1234)
-		{
-			Integer64 *ret = (Integer64*)lua_touserdata(L,-1);
-			lua_pop(L,1);
-			return ret->GetValue();
-		}
-		return 0;
-	}
-	else
-	{
-		int64_t ret = (int64_t)lua_tonumber(L,-1);
-		lua_pop(L,1);
-		return ret;
-	}
-}
-
-template<>
 inline double popvalue(lua_State *L)
 {
 	double ret = lua_tonumber(L,-1);
@@ -149,11 +133,7 @@ template<>
 inline luatable popvalue(lua_State *L)
 {
 	luatable ret;
-#if (LUA_VERSION_NUM<502)
-	int len = lua_objlen(L, -1);
-#else	
 	int len = luaL_len(L, -1);
-#endif
 	for( int i = 1; i <= len; ++i)
 	{
 		lua_rawgeti(L,-1,i);
@@ -163,24 +143,17 @@ inline luatable popvalue(lua_State *L)
 			ret.push_back(any());
 			lua_pop(L,1);
 		}
-		else if(type == LUA_TUSERDATA)
+		else if(type == LUA_TUSERDATA || type == LUA_TLIGHTUSERDATA)
 		{
-			const void *r = lua_touserdata(L,-1);
-			if(((Integer64*)r)->GetFlag() == 0XFEDC1234)
-				ret.push_back(((Integer64*)r)->GetValue());
-			else if(((objUserData<void>*)r)->m_flag == 0x1234AFEC)
+			void *r = lua_touserdata(L,-1);
+			if(userdataToPtr.find(r) != userdataToPtr.end())
 				ret.push_back((const void*)((objUserData<void>*)r)->ptr);
 			else
 				ret.push_back(r);
 			lua_pop(L,1);
 		}		
 		else if(type == LUA_TNUMBER){
-			lua_Number n = lua_tonumber(L,-1);
-			if(n == lua_Integer(n)){
-				ret.push_back(popvalue<int64_t>(L));
-			}
-			else
-				ret.push_back(popvalue<double>(L));
+			ret.push_back(popvalue<double>(L));
 		}
 		else if(type == LUA_TSTRING)
 			ret.push_back(popvalue<std::string>(L));
@@ -188,11 +161,7 @@ inline luatable popvalue(lua_State *L)
 			ret.push_back(popvalue<bool>(L));
 		else if(type == LUA_TTABLE)
 		{
-#if (LUA_VERSION_NUM<502)
-			int _len = lua_objlen(L, -1);
-#else	
-			int _len = luaL_len(L, -1);
-#endif		
+			int _len = luaL_len(L, -1);	
 			if(_len == 0)
 			{
 				lua_pushnil(L);//push a key

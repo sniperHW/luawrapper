@@ -1,6 +1,7 @@
 #ifndef _LUACLASS_H
 #define _LUACLASS_H
 #include <string.h>
+#include <map>
 #include "luacommon.h"
 #include "luaObject.h"
 #include "any.h"
@@ -10,152 +11,8 @@ namespace luacpp{
 template<typename T>
 void push_obj(lua_State *L,const T &obj);
 
-template<typename T>
-T popvalue(lua_State *L);
-class Integer64
-{
-public:
-	Integer64(int64_t val):m_val(val)
-	{
-		m_flag = 0XFEDC1234;
-	}
-
-	int64_t GetValue() const
-	{
-		return m_val;
-	}
-
-	int GetFlag() const{return m_flag;}
-	static void Register2Lua(lua_State *L);
-	static void setmetatable(lua_State *L)
-	{
-		luaL_getmetatable(L, "kenny.lualib");
-		lua_pushstring(L,"int64");
-		lua_gettable(L,-2);
-		lua_setmetatable(L, -3);
-		lua_pop(L,1);
-	}
-
-#define GET_PARAM												\
-	Integer64 *i64self  = (Integer64 *)lua_touserdata(L,1);		\
-	Integer64 *i64other = (Integer64 *)lua_touserdata(L,2);		\
-	Integer64 tmp(0);											\
-	if(!i64other)												\
-	{															\
-		if(!lua_isnumber(L,2)) luaL_error(L,"bad argument");	\
-		tmp.m_val = (int64_t)lua_tonumber(L,2);					\
-		i64other = &tmp;										\
-	}
-															
-	
-#define I64_RELA(OP) do{										\
-	GET_PARAM													\
-	if(!i64self)												\
-	{															\
-		if(!lua_isnumber(L,1)) luaL_error(L,"bad argument");	\
-		int64_t num = (int64_t)lua_tonumber(L,1);				\
-		lua_pushboolean(L,num OP i64other->m_val);				\
-		return 1;												\
-	}else														\
-	{															\
-		lua_pushboolean(L,i64self->m_val OP i64other->m_val);	\
-		return 1;												\
-	}}while(0)
-
-
-	static int i64Le(lua_State *L)
-	{
-		I64_RELA(<=);
-	}
-
-	static int i64Lt(lua_State *L)
-	{
-		I64_RELA(<);
-	}
-
-	static int i64Eq(lua_State *L)
-	{
-		I64_RELA(==);
-	}
-
-#define I64_MATH(OP) do{										\
-	GET_PARAM													\
-	if(!i64self)												\
-	{															\
-		if(!lua_isnumber(L,1)) luaL_error(L,"bad argument");	\
-		long num = (long)lua_tonumber(L,1);						\
-		size_t nbytes = sizeof(Integer64);						\
-		i64self = (Integer64*)lua_newuserdata(L, nbytes);		\
-		new(i64self)Integer64(num);								\
-		i64self->m_val =  i64self->m_val OP i64other->m_val;	\
-	}else														\
-	{															\
-		i64self->m_val = i64self->m_val OP i64other->m_val;		\
-		lua_pushlightuserdata(L,i64self);						\
-	}															\
-	Integer64::setmetatable(L);									\
-	return 1;}while(0)
-
-
-	static int i64Mod(lua_State *L)
-	{
-		I64_MATH(%);
-	}
-
-	static int i64Div(lua_State *L)
-	{
-		I64_MATH(/);
-	}
-
-	static int i64Mul(lua_State *L)
-	{
-		I64_MATH(*);
-	}
-
-	static int i64Add(lua_State *L)
-	{
-		I64_MATH(+);
-	}
-
-	static int i64Sub(lua_State *L)
-	{
-		I64_MATH(-);
-	}
-
-	static int i64toString(lua_State *L)
-	{
-		Integer64 *i64self  = (Integer64 *)lua_touserdata(L,1);
-		luaL_argcheck(L, i64self  != NULL, 1, "userdata expected");
-		char temp[64];
-#ifdef _VC
-		_snprintf_s(temp,512,"%I64d", i64self->m_val);
-#else
-		snprintf(temp,512, "%lld", i64self->m_val);
-#endif
-		lua_pushstring(L, temp);
-		return 1;
-	}
-
-	static int i64Destroy(lua_State *L)
-	{
-		Integer64 *i64self  = (Integer64 *)lua_touserdata(L,1);
-		luaL_argcheck(L, i64self  != NULL, 1, "userdata expected");
-		printf("i64Destroy\n");
-		return 0;
-	}
-
-private:
-	int64_t m_val;
-	int     m_flag;
-};
-
-static void pushI64(lua_State *L,int64_t value)
-{
-	size_t nbytes = sizeof(Integer64);
-	void *buf = lua_newuserdata(L, nbytes);
-	new(buf)Integer64(value);
-	Integer64::setmetatable(L);
-}
+extern std::map<void*,void*> ptrToUserData;
+extern std::map<void*,void*> userdataToPtr;
 
 enum{
 	MEMBER_FUNCTION = 1,
@@ -368,7 +225,7 @@ int luaClassWrapper<T>::constructor_size = 0;
 template<typename T>
 memberfield<T> luaClassWrapper<T>::constructors[16];
 
-extern int NewObj(lua_State *L,const void *ptr,const char *classname);
+extern int pushObj(lua_State *L,const void *ptr,const char *classname);
 
 template<typename T>
 class objUserData
@@ -384,9 +241,9 @@ public:
       return (objUserData<T> *)ud;
     }
 
-    static int NewObj(lua_State *L,const T *ptr)
+    static int pushObj(lua_State *L,const T *ptr)
     {
-        return luacpp::NewObj(L,ptr,luaRegisterClass<T>::GetClassName());
+        return luacpp::pushObj(L,ptr,luaRegisterClass<T>::GetClassName());
     }
 
     static int NewIndex(lua_State *L)
@@ -447,11 +304,7 @@ public:
 		else
 		{
 			char str[512];
-#ifdef _VC
-			_snprintf_s(str,512,"%s: unsupport %d arguments constructor\n",luaRegisterClass<T>::GetClassName(),arg_size);
-#else
 			snprintf(str,512,"%s: unsupport %d arguments constructor\n",luaRegisterClass<T>::GetClassName(),arg_size);
-#endif
 			luaL_error(L,str);
 		}
 		return 1;
@@ -461,6 +314,8 @@ public:
 	{
 		printf("on_gc\n");
 		objUserData<T> *self  = (objUserData<T> *)lua_touserdata(L,1);
+		ptrToUserData.erase((void*)self->ptr);
+		userdataToPtr.erase((void*)self);
 		if(self->construct_by_lua)
 		{
 			printf("create_by_lua delete\n");
@@ -470,8 +325,7 @@ public:
 	}
 
 public:
-    T *ptr;
-	int m_flag;
+    T   *ptr;
 	bool construct_by_lua;
 
 };
@@ -686,9 +540,10 @@ private:
 		static int lua_cfunction(lua_State *L)
 		{
 			objUserData<T> *obj = (objUserData<T> *)lua_newuserdata(L, sizeof(objUserData<T>));
-			obj->m_flag = 0x1234AFEC;
 			obj->construct_by_lua = true;
 			obj->ptr = new T;
+			ptrToUserData[(void*)obj->ptr] = obj;
+	    	userdataToPtr[(void*)obj] = obj->ptr;
 			return 1;
 		}
 	};
@@ -702,9 +557,10 @@ private:
 			typename GetReplaceType<Arg1>::type tmp_arg1 = popvalue<typename GetReplaceType<Arg1>::type>(L);
 			Arg1 arg1 = GetRawValue<typename GetReplaceType<Arg1>::type>(tmp_arg1);
 			objUserData<T> *obj = (objUserData<T> *)lua_newuserdata(L, sizeof(objUserData<T>));
-			obj->m_flag = 0x1234AFEC;
 			obj->construct_by_lua = true;
 			obj->ptr = new T(arg1);
+			ptrToUserData[(void*)obj->ptr] = obj;
+	    	userdataToPtr[(void*)obj] = obj->ptr;
 			return 1;
 		}
 	};
@@ -720,9 +576,10 @@ private:
 			typename GetReplaceType<Arg2>::type tmp_arg2 = popvalue<typename GetReplaceType<Arg2>::type>(L);
 			Arg2 arg2 = GetRawValue<typename GetReplaceType<Arg2>::type>(tmp_arg2);
 			objUserData<T> *obj = (objUserData<T> *)lua_newuserdata(L, sizeof(objUserData<T>));
-			obj->m_flag = 0x1234AFEC;
 			obj->construct_by_lua = true;
 			obj->ptr = new T(arg1,arg2);
+			ptrToUserData[(void*)obj->ptr] = obj;
+	    	userdataToPtr[(void*)obj] = obj->ptr;
 			return 1;
 		}
 	};
@@ -740,9 +597,10 @@ private:
 			typename GetReplaceType<Arg3>::type tmp_arg3 = popvalue<typename GetReplaceType<Arg3>::type>(L);
 			Arg3 arg3 = GetRawValue<typename GetReplaceType<Arg3>::type>(tmp_arg3);
 			objUserData<T> *obj = (objUserData<T> *)lua_newuserdata(L, sizeof(objUserData<T>));
-			obj->m_flag = 0x1234AFEC;
 			obj->construct_by_lua = true;
 			obj->ptr = new T(arg1,arg2,arg3);
+			ptrToUserData[(void*)obj->ptr] = obj;
+	    	userdataToPtr[(void*)obj] = obj->ptr;
 			return 1;
 		}
 	};
@@ -762,9 +620,10 @@ private:
 			typename GetReplaceType<Arg4>::type tmp_arg4 = popvalue<typename GetReplaceType<Arg4>::type>(L);
 			Arg4 arg4 = GetRawValue<typename GetReplaceType<Arg4>::type>(tmp_arg4);
 			objUserData<T> *obj = (objUserData<T> *)lua_newuserdata(L, sizeof(objUserData<T>));
-			obj->m_flag = 0x1234AFEC;
 			obj->construct_by_lua = true;
 			obj->ptr = new T(arg1,arg2,arg3,arg4);
+			ptrToUserData[(void*)obj->ptr] = obj;
+	    	userdataToPtr[(void*)obj] = obj->ptr;
 			return 1;
 		}
 	};
