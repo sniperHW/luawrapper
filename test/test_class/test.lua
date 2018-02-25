@@ -26,7 +26,8 @@ function  test4(obj)
 end
 
 function test5()
-	a = test_class_A()
+	a = test_class_A(999)
+	print(a,a.memb_a)
 	b = pass_by_reference(a)
 	print(a,b,a.memb_a,b.memb_a)
 end

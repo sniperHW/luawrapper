@@ -3,7 +3,7 @@
 namespace luacpp{
 
 std::map<void*,void*> ptrToUserData;
-std::map<void*,void*> userdataToPtr;
+std::set<void*> userdataSet;;
 
 bool luaWrapper::dofile(const char *filename)
 {
@@ -31,7 +31,6 @@ void luaWrapper::init()
 
 int pushObj(lua_State *L,const void *ptr,const char *classname)
 {
-	printf("classname:%s\n",classname);
 	objUserData<void> *userdata = (objUserData<void>*)ptrToUserData[(void*)ptr];
 	if(!userdata) {
 	    size_t nbytes = sizeof(objUserData<void>);
@@ -39,7 +38,7 @@ int pushObj(lua_State *L,const void *ptr,const char *classname)
 	    userdata->ptr = const_cast<void*>(ptr);	
 	    userdata->construct_by_lua = false;
 	    ptrToUserData[(void*)ptr] = userdata;
-	    userdataToPtr[(void*)userdata] = (void*)ptr;
+	    userdataSet.insert((void*)userdata);
 	} else {
 		lua_pushlightuserdata(L,userdata);
 	} 

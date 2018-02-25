@@ -18,11 +18,11 @@ class test_class_A
 		}
 		test_class_A(const test_class_A &other):memb_a(other.memb_a)
 		{
-			printf("test_class_A copy constructor %d \n",memb_a);
+			
 		}
 		~test_class_A()
 		{
-			printf("~test_class_A\n");
+			
 		}
 		int  memb_a;
 		void show()
@@ -102,8 +102,7 @@ int main()
 
 	luacpp::reg_cclass<test_class_A>::_reg(L,"test_class_A")
 		.constructor<void>()//无参构造
-		.constructor<const test_class_A&>()//一个参数构造
-		//.constructor<int>()				   //一个参数构造
+		.constructor<int>()	//一个参数构造
 		.property("memb_a",&test_class_A::memb_a)
 		.method("show",&test_class_A::show)
 		.method("static_func",&test_class_A::func_static);

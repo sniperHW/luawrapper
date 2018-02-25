@@ -17,11 +17,11 @@
 #ifndef _POPVALUE_H
 #define _POPVALUE_H
 
-#include <map>
+#include <set>
 
 namespace luacpp{
 
-extern std::map<void*,void*> userdataToPtr;
+extern std::set<void*> userdataSet;
 
 template<typename T>
 inline T _pop(lua_State *L,Int2Type<true>)
@@ -87,7 +87,7 @@ inline T pop_void_ptr(lua_State *L)
 	T ret;
 	ret = lua_touserdata(L,-1);
 
-	if(userdataToPtr.find((void*)ret) != userdataToPtr.end())
+	if(userdataSet.find((void*)ret) != userdataSet.end())
 		ret = ((objUserData<void>*)ret)->ptr;
 	lua_pop(L,1);
 	return ret;	
@@ -146,7 +146,7 @@ inline luatable popvalue(lua_State *L)
 		else if(type == LUA_TUSERDATA || type == LUA_TLIGHTUSERDATA)
 		{
 			void *r = lua_touserdata(L,-1);
-			if(userdataToPtr.find(r) != userdataToPtr.end())
+			if(userdataSet.find(r) != userdataSet.end())
 				ret.push_back((const void*)((objUserData<void>*)r)->ptr);
 			else
 				ret.push_back(r);

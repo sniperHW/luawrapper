@@ -2,6 +2,7 @@
 #define _LUACLASS_H
 #include <string.h>
 #include <map>
+#include <set>
 #include "luacommon.h"
 #include "luaObject.h"
 #include "any.h"
@@ -12,7 +13,7 @@ template<typename T>
 void push_obj(lua_State *L,const T &obj);
 
 extern std::map<void*,void*> ptrToUserData;
-extern std::map<void*,void*> userdataToPtr;
+extern std::set<void*> userdataSet;
 
 enum{
 	MEMBER_FUNCTION = 1,
@@ -312,13 +313,11 @@ public:
 
 	static int on_gc(lua_State *L)
 	{
-		printf("on_gc\n");
 		objUserData<T> *self  = (objUserData<T> *)lua_touserdata(L,1);
 		ptrToUserData.erase((void*)self->ptr);
-		userdataToPtr.erase((void*)self);
+		userdataSet.erase((void*)self);
 		if(self->construct_by_lua)
 		{
-			printf("create_by_lua delete\n");
 			delete self->ptr;
 		}
 		return 0;
@@ -543,7 +542,7 @@ private:
 			obj->construct_by_lua = true;
 			obj->ptr = new T;
 			ptrToUserData[(void*)obj->ptr] = obj;
-	    	userdataToPtr[(void*)obj] = obj->ptr;
+	    	userdataSet.insert((void*)obj);
 			return 1;
 		}
 	};
@@ -560,7 +559,7 @@ private:
 			obj->construct_by_lua = true;
 			obj->ptr = new T(arg1);
 			ptrToUserData[(void*)obj->ptr] = obj;
-	    	userdataToPtr[(void*)obj] = obj->ptr;
+	    	userdataSet.insert((void*)obj);
 			return 1;
 		}
 	};
@@ -579,7 +578,7 @@ private:
 			obj->construct_by_lua = true;
 			obj->ptr = new T(arg1,arg2);
 			ptrToUserData[(void*)obj->ptr] = obj;
-	    	userdataToPtr[(void*)obj] = obj->ptr;
+	    	userdataSet.insert((void*)obj);
 			return 1;
 		}
 	};
@@ -600,7 +599,7 @@ private:
 			obj->construct_by_lua = true;
 			obj->ptr = new T(arg1,arg2,arg3);
 			ptrToUserData[(void*)obj->ptr] = obj;
-	    	userdataToPtr[(void*)obj] = obj->ptr;
+	    	userdataSet.insert((void*)obj);
 			return 1;
 		}
 	};
@@ -623,7 +622,7 @@ private:
 			obj->construct_by_lua = true;
 			obj->ptr = new T(arg1,arg2,arg3,arg4);
 			ptrToUserData[(void*)obj->ptr] = obj;
-	    	userdataToPtr[(void*)obj] = obj->ptr;
+	    	userdataSet.insert((void*)obj);
 			return 1;
 		}
 	};
