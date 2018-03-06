@@ -16,17 +16,38 @@ bool luaWrapper::dofile(const char *filename)
 	return true;
 }
 
-static void kennyluainit(lua_State *L)
-{			
-	luaL_newmetatable(L, "kenny.lualib");
-	lua_pop(L,1);
-}
-
 void luaWrapper::init()
 {
 	lState = luaL_newstate();
 	luaL_openlibs(lState);
-	kennyluainit(lState);
+
+	lua_newtable(lState);
+	lua_newtable(lState);
+	lua_pushstring(lState,"__mode");
+	lua_pushstring(lState,"v");
+	lua_rawset(lState,-3);
+	lua_setmetatable(lState,-2);
+	lua_setglobal(lState,"kenny.lualib.userdata_info");
+
+	luaL_newmetatable(lState, "kenny.lualib");
+	lua_pop(lState,1);
+}
+
+void set_userdata(lua_State *L,void *ptr,int index) {
+	printf("set_userdata:%p\n",ptr);
+	lua_pushvalue(L,index);
+	lua_getglobal(L,"kenny.lualib.userdata_info");
+	lua_pushlightuserdata(L,ptr);  //push key
+	lua_rotate(L,lua_gettop(L)-3,3);
+	lua_rawset(L,-3);
+	lua_pop(L,1);
+}
+
+void get_userdata(lua_State *L,void *ptr) {
+	lua_getglobal(L,"kenny.lualib.userdata_info");
+	lua_pushlightuserdata(L,ptr);  //push key
+	lua_rawget(L,-2);
+	lua_replace(L,-2);
 }
 
 int pushObj(lua_State *L,const void *ptr,const char *classname)
@@ -39,8 +60,9 @@ int pushObj(lua_State *L,const void *ptr,const char *classname)
 	    userdata->construct_by_lua = false;
 	    ptrToUserData[(void*)ptr] = userdata;
 	    userdataSet.insert((void*)userdata);
+	    set_userdata(L,(void*)userdata,-1);
 	} else {
-		lua_pushlightuserdata(L,userdata);
+		get_userdata(L,(void*)userdata);
 	} 
 
     luaL_getmetatable(L, "kenny.lualib");
@@ -48,6 +70,7 @@ int pushObj(lua_State *L,const void *ptr,const char *classname)
     lua_gettable(L,-2);
     lua_setmetatable(L, -3);
     lua_pop(L,1);//pop mt kenny.lualib
+
     return 1;
 
 } 

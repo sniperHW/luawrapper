@@ -11,6 +11,7 @@
 namespace luacpp{
 template<typename T>
 void push_obj(lua_State *L,const T &obj);
+void set_userdata(lua_State *L,void *ptr,int index);
 
 extern std::map<void*,void*> ptrToUserData;
 extern std::set<void*> userdataSet;
@@ -168,7 +169,6 @@ class luaClassWrapper
         static int luaopen_objlib(lua_State *L) {
 
             luaL_getmetatable(L, "kenny.lualib");
-
             lua_pushstring(L,luaRegisterClass<T>::GetClassName());
 
             luaL_newmetatable(L, luaRegisterClass<T>::GetClassName());
@@ -313,8 +313,9 @@ public:
 
 	static int on_gc(lua_State *L)
 	{
-		objUserData<T> *self  = (objUserData<T> *)lua_touserdata(L,1);
-		ptrToUserData.erase((void*)self->ptr);
+		objUserData<T> *self  = (objUserData<T> *)lua_touserdata(L,-1);
+		printf("gc %p\n",self);
+        ptrToUserData.erase((void*)self->ptr);
 		userdataSet.erase((void*)self);
 		if(self->construct_by_lua)
 		{
@@ -543,6 +544,7 @@ private:
 			obj->ptr = new T;
 			ptrToUserData[(void*)obj->ptr] = obj;
 	    	userdataSet.insert((void*)obj);
+            set_userdata(L,(void*)obj,-1);
 			return 1;
 		}
 	};
@@ -560,6 +562,7 @@ private:
 			obj->ptr = new T(arg1);
 			ptrToUserData[(void*)obj->ptr] = obj;
 	    	userdataSet.insert((void*)obj);
+            set_userdata(L,(void*)obj,-1);
 			return 1;
 		}
 	};
@@ -579,6 +582,7 @@ private:
 			obj->ptr = new T(arg1,arg2);
 			ptrToUserData[(void*)obj->ptr] = obj;
 	    	userdataSet.insert((void*)obj);
+            set_userdata(L,(void*)obj,-1);
 			return 1;
 		}
 	};
@@ -600,6 +604,7 @@ private:
 			obj->ptr = new T(arg1,arg2,arg3);
 			ptrToUserData[(void*)obj->ptr] = obj;
 	    	userdataSet.insert((void*)obj);
+            set_userdata(L,(void*)obj,-1);
 			return 1;
 		}
 	};
@@ -623,6 +628,7 @@ private:
 			obj->ptr = new T(arg1,arg2,arg3,arg4);
 			ptrToUserData[(void*)obj->ptr] = obj;
 	    	userdataSet.insert((void*)obj);
+            set_userdata(L,(void*)obj,-1);
 			return 1;
 		}
 	};
