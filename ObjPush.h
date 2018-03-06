@@ -30,16 +30,13 @@ public:
 	}
 private:
 
-	/*
-	*  禁止向lua传递类对象或引用以防止用户向lua传递临时对象
-	*/
-	void _objpush(lua_State *L,const T &arg,Int2Type<false>);
-	/*{
+	void _objpush(lua_State *L,const T &arg,Int2Type<false>)
+	{
 		if(!luaRegisterClass<typename pointerTraits<T>::PointeeType>::isRegister())
 			lua_pushlightuserdata(L,(T*)&arg);
 		else
 			objUserData<typename pointerTraits<T>::PointeeType>::pushObj(L,&arg);		
-	}*/
+	}
 	
 	void _objpush(lua_State *L,const T &arg,Int2Type<true>)
 	{

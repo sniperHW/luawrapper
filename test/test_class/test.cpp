@@ -111,7 +111,7 @@ int main()
 	test_class_A a;
 	a.memb_a = 100;
 	try{
-		luacpp::call<void>(L,"test1",&a,&a);
+		luacpp::call<void>(L,"test1",a,a);
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -136,7 +136,7 @@ int main()
 	luacpp::reg_cfun(L,"pass_by_value",pass_by_value);
 	luacpp::reg_cfun(L,"pass_by_reference",pass_by_reference);
 	try{
-		luacpp::call<void>(L,"test3",&a);
+		luacpp::call<void>(L,"test3",a);
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
@@ -144,7 +144,7 @@ int main()
 
 
 	try{
-		luatable lt = luacpp::call<luatable>(L,"test4",&a);
+		luatable lt = luacpp::call<luatable>(L,"test4",a);
 		for(int i = 0; i < (int)lt.size();++i)
 		{
 			test_class_A *ptr_a = any_cast<test_class_A*>(lt[i]);
