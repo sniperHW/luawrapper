@@ -3,7 +3,8 @@
 namespace luacpp{
 
 std::map<void*,void*> ptrToUserData;
-std::set<void*> userdataSet;;
+std::set<void*> userdataSet;
+const char *table_userdata_info = "kenny.lualib.userdata_info";
 
 bool luaWrapper::dofile(const char *filename)
 {
@@ -27,16 +28,13 @@ void luaWrapper::init()
 	lua_pushstring(lState,"v");
 	lua_rawset(lState,-3);
 	lua_setmetatable(lState,-2);
-	lua_setglobal(lState,"kenny.lualib.userdata_info");
+	lua_setglobal(lState,table_userdata_info);
 
-	luaL_newmetatable(lState, "kenny.lualib");
-	lua_pop(lState,1);
 }
 
 void set_userdata(lua_State *L,void *ptr,int index) {
-	printf("set_userdata:%p\n",ptr);
 	lua_pushvalue(L,index);
-	lua_getglobal(L,"kenny.lualib.userdata_info");
+	lua_getglobal(L,table_userdata_info);
 	lua_pushlightuserdata(L,ptr);  //push key
 	lua_rotate(L,lua_gettop(L)-3,3);
 	lua_rawset(L,-3);
@@ -44,7 +42,7 @@ void set_userdata(lua_State *L,void *ptr,int index) {
 }
 
 void get_userdata(lua_State *L,void *ptr) {
-	lua_getglobal(L,"kenny.lualib.userdata_info");
+	lua_getglobal(L,table_userdata_info);
 	lua_pushlightuserdata(L,ptr);  //push key
 	lua_rawget(L,-2);
 	lua_replace(L,-2);
@@ -61,16 +59,10 @@ int pushObj(lua_State *L,const void *ptr,const char *classname)
 	    ptrToUserData[(void*)ptr] = userdata;
 	    userdataSet.insert((void*)userdata);
 	    set_userdata(L,(void*)userdata,-1);
+		luaL_setmetatable(L,classname); 	    
 	} else {
 		get_userdata(L,(void*)userdata);
-	} 
-
-    luaL_getmetatable(L, "kenny.lualib");
-    lua_pushstring(L,classname);
-    lua_gettable(L,-2);
-    lua_setmetatable(L, -3);
-    lua_pop(L,1);//pop mt kenny.lualib
-
+	}
     return 1;
 
 } 

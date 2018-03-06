@@ -28,13 +28,8 @@ inline T _pop(lua_State *L,Int2Type<true>)
 {
 	typedef typename pointerTraits<T>::PointeeType rType;
 	objUserData<rType> *obj = objUserData<rType>::checkobjuserdata(L,-1);
-	rType *ret;
-	if(obj)
-		ret = obj->ptr;
-	else 
-		ret = (rType*)lua_touserdata(L,-1);
 	lua_pop(L,1);
-	return ret;
+	return obj->ptr;
 }
 
 template<typename T>

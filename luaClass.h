@@ -44,7 +44,7 @@ struct memberfield
     		void  (*sfunction)(void);       //static func
     		lua_CFunction slua_func;
     	};
-    	lua_CFunction constructor;
+        void (*constructor)(lua_State *L);
     };
 
 	memberfield() {
@@ -166,27 +166,17 @@ class luaClassWrapper
 
     public:
 
-        static int luaopen_objlib(lua_State *L) {
-
-            luaL_getmetatable(L, "kenny.lualib");
-            lua_pushstring(L,luaRegisterClass<T>::GetClassName());
-
+        static void luaopen_objlib(lua_State *L) {
+            luaL_Reg meta[] = {
+                {"__gc",&objUserData<T>::on_gc},
+                {"__index",&objUserData<T>::Index},
+                {"__newindex",&objUserData<T>::NewIndex},
+                //{"__eq",&objUserData<T>::Eq},                
+                {NULL, NULL}
+            };             
             luaL_newmetatable(L, luaRegisterClass<T>::GetClassName());
-            lua_pushstring(L, "__index");
-            lua_pushcfunction(L, &objUserData<T>::Index);
-            lua_settable(L, -3);
-
-			lua_pushstring(L,"__gc");
-			lua_pushcfunction(L, &objUserData<T>::on_gc);
-			lua_rawset(L, -3);
-
-            lua_pushstring(L, "__newindex");
-            lua_pushcfunction(L, &objUserData<T>::NewIndex);
-            lua_rawset(L, -3);
-
-            lua_rawset(L,1);
+            luaL_setfuncs(L, meta, 0);
             lua_pop(L,1);
-            return 1;
         }
 
         static std::map<std::string,memberfield<T> > &GetAllFields()
@@ -233,10 +223,7 @@ class objUserData
 {
 public:
 
-
     static objUserData<T> *checkobjuserdata (lua_State *L,int index) {
-      if(!luaRegisterClass<T>::isRegister())
-		return NULL;
       void *ud = lua_touserdata(L,index);
       luaL_argcheck(L, ud != NULL, 1, "userdata expected");
       return (objUserData<T> *)ud;
@@ -289,6 +276,16 @@ public:
         return 0;
     }
 
+    static int Eq(lua_State *L) {
+        if(lua_type(L,1) != lua_type(L,2)) {
+            lua_pushboolean(L,0);
+            return 1;
+        }
+        objUserData<void*>* left = (objUserData<void*>*)lua_touserdata(L,1);
+        objUserData<void*>* right = (objUserData<void*>*)lua_touserdata(L,2);
+        lua_pushboolean(L,left->ptr == right->ptr ? 1:0);
+        return 1;
+    }
 
     static int Construct(lua_State *L)
     {
@@ -296,11 +293,7 @@ public:
 		if(arg_size < 16 && luaClassWrapper<T>::constructors[arg_size].constructor)
 		{
 			luaClassWrapper<T>::constructors[arg_size].constructor(L);
-			luaL_getmetatable(L, "kenny.lualib");
-			lua_pushstring(L,luaRegisterClass<T>::GetClassName());
-			lua_gettable(L,-2);
-			lua_setmetatable(L, -3);
-			lua_pop(L,1);//pop mt kenny.lualib
+            luaL_setmetatable(L,luaRegisterClass<T>::GetClassName());
 		}
 		else
 		{
@@ -314,13 +307,16 @@ public:
 	static int on_gc(lua_State *L)
 	{
 		objUserData<T> *self  = (objUserData<T> *)lua_touserdata(L,-1);
-		printf("gc %p\n",self);
-        ptrToUserData.erase((void*)self->ptr);
-		userdataSet.erase((void*)self);
-		if(self->construct_by_lua)
-		{
-			delete self->ptr;
-		}
+        if(self->ptr)
+        {
+            ptrToUserData.erase((void*)self->ptr);
+    		userdataSet.erase((void*)self);
+    		if(self->construct_by_lua)
+    		{
+    			delete self->ptr;
+    		}
+            self->ptr = NULL;
+        }
 		return 0;
 	}
 
@@ -537,7 +533,7 @@ private:
 	class construct_function0
 	{
 	public:
-		static int lua_cfunction(lua_State *L)
+		static void lua_cfunction(lua_State *L)
 		{
 			objUserData<T> *obj = (objUserData<T> *)lua_newuserdata(L, sizeof(objUserData<T>));
 			obj->construct_by_lua = true;
@@ -545,7 +541,7 @@ private:
 			ptrToUserData[(void*)obj->ptr] = obj;
 	    	userdataSet.insert((void*)obj);
             set_userdata(L,(void*)obj,-1);
-			return 1;
+			return;
 		}
 	};
 
@@ -553,7 +549,7 @@ private:
 	class construct_function1
 	{
 	public:
-		static int lua_cfunction(lua_State *L)
+		static void lua_cfunction(lua_State *L)
 		{
 			typename GetReplaceType<Arg1>::type tmp_arg1 = popvalue<typename GetReplaceType<Arg1>::type>(L);
 			Arg1 arg1 = GetRawValue<typename GetReplaceType<Arg1>::type>(tmp_arg1);
@@ -563,7 +559,6 @@ private:
 			ptrToUserData[(void*)obj->ptr] = obj;
 	    	userdataSet.insert((void*)obj);
             set_userdata(L,(void*)obj,-1);
-			return 1;
 		}
 	};
 
@@ -571,7 +566,7 @@ private:
 	class construct_function2
 	{
 	public:
-		static int lua_cfunction(lua_State *L)
+		static void lua_cfunction(lua_State *L)
 		{
 			typename GetReplaceType<Arg1>::type tmp_arg1 = popvalue<typename GetReplaceType<Arg1>::type>(L);
 			Arg1 arg1 = GetRawValue<typename GetReplaceType<Arg1>::type>(tmp_arg1);
@@ -583,7 +578,6 @@ private:
 			ptrToUserData[(void*)obj->ptr] = obj;
 	    	userdataSet.insert((void*)obj);
             set_userdata(L,(void*)obj,-1);
-			return 1;
 		}
 	};
 
@@ -591,7 +585,7 @@ private:
 	class construct_function3
 	{
 	public:
-		static int lua_cfunction(lua_State *L)
+		static void lua_cfunction(lua_State *L)
 		{
 			typename GetReplaceType<Arg1>::type tmp_arg1 = popvalue<typename GetReplaceType<Arg1>::type>(L);
 			Arg1 arg1 = GetRawValue<typename GetReplaceType<Arg1>::type>(tmp_arg1);
@@ -605,7 +599,6 @@ private:
 			ptrToUserData[(void*)obj->ptr] = obj;
 	    	userdataSet.insert((void*)obj);
             set_userdata(L,(void*)obj,-1);
-			return 1;
 		}
 	};
 
@@ -613,7 +606,7 @@ private:
 	class construct_function4
 	{
 	public:
-		static int lua_cfunction(lua_State *L)
+		static void lua_cfunction(lua_State *L)
 		{
 			typename GetReplaceType<Arg1>::type tmp_arg1 = popvalue<typename GetReplaceType<Arg1>::type>(L);
 			Arg1 arg1 = GetRawValue<typename GetReplaceType<Arg1>::type>(tmp_arg1);
@@ -629,7 +622,6 @@ private:
 			ptrToUserData[(void*)obj->ptr] = obj;
 	    	userdataSet.insert((void*)obj);
             set_userdata(L,(void*)obj,-1);
-			return 1;
 		}
 	};
 public:
@@ -776,18 +768,8 @@ private:
 	{
 		if(1 == luaClassWrapper<T>::InsertConstructors(arg_size,mf))
 		{
-			lua_getglobal(L,"_G");
-			if(!lua_istable(L, -1))
-			{
-				lua_pop(L,1);
-				lua_newtable(L);
-				lua_pushvalue(L,-1);
-				lua_setglobal(L,"_G");
-			}
-			lua_pushstring(L, luaRegisterClass<T>::GetClassName());
-			lua_pushcfunction(L,objUserData<T>::Construct);
-			lua_settable(L, -3);
-			lua_pop(L,1);
+            lua_pushcfunction(L,objUserData<T>::Construct);
+            lua_setglobal(L,luaRegisterClass<T>::GetClassName());
 		}
 	}
 	lua_State *L;

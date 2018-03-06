@@ -124,10 +124,9 @@ int main()
 		.method("show2",&base::show2);
 	luacpp::reg_cclass<child,base>::_reg(L,"child")
 		.method("child_show",&child::child_show);
-	child c;
-	base *b = &c;
+	child c1,c2;
 	try{
-		luacpp::call<void>(L,"test2",b,&c);
+		luacpp::call<void>(L,"test2",(base*)&c1,&c2);
 	}catch(std::string &err)
 	{
 		printf("%s\n",err.c_str());
