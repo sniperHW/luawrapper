@@ -44,7 +44,7 @@ public:
 		}
 
 	luaObject()
-	:m_iKeyIndex(0),m_plState(0),counter(NULL){}
+	:m_iKeyIndex(LUA_NOREF),m_plState(NULL),counter(NULL){}
 
 	luaObject &operator = (const luaObject & other)
 	{
@@ -62,7 +62,10 @@ public:
 				if(--(*counter) <= 0)
 				{
 					//原来指向的对象现在已经没有其它对象在引用了,可以从lua中释放掉了
-					luaL_unref(this->m_plState,LUA_REGISTRYINDEX,this->m_iKeyIndex);
+					if(!this->isNULL())
+					{
+						luaL_unref(this->m_plState,LUA_REGISTRYINDEX,this->m_iKeyIndex);
+					}
 					delete counter;
 				}
 
@@ -87,7 +90,10 @@ public:
 		{
 			if(!(--(*counter)))
 			{
-				luaL_unref(m_plState,LUA_REGISTRYINDEX,m_iKeyIndex);
+				if(!this->isNULL()) 
+				{
+					luaL_unref(m_plState,LUA_REGISTRYINDEX,m_iKeyIndex);
+				}
 				delete counter;
 			}
 		}
@@ -169,7 +175,7 @@ public:
 	}
 	
 	bool isNULL() const{
-		return m_iKeyIndex <= 0;
+		return (m_iKeyIndex == LUA_REFNIL) || (m_iKeyIndex == LUA_NOREF);
 	}
 
 private:
